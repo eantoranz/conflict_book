@@ -1,0 +1,41 @@
+% copyright 2020 Edmundo Carmona Antoranz
+% Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
+
+\documentclass{article}
+
+\title{Introduction}
+\author{Edmundo Carmona Antoranz}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+Developers spend so much time writing code. Actually adding, modifying and deleting code.... moving it around, reformatting it,
+refactoring, improving.... etc. As we have moved to {\bf Distributed Version Control Systems} (or {\it DVCS}, for short), git
+specially, we are running way more often operations that make conflicts show up so, in fact, most of us developers spend some
+time dealing with conflicts, even if painfully, every once in a while.
+
+What normally happens is that a project is developed by multiple developers {\it independently} and then all this separate work
+has to be put together. When git tries to merge the work that was developed in two separate directions it tries its best to figure
+out how to put it together programmatically.... however, there are some situations where git will give up and raise its hands asking
+for a person to actually take a look at the code to help git sort it out. When this happens, it is called {\bf a conflict}.
+
+There's nothing wrong with having conflicts. In the old days when Centralized VCSs were the norm you had these long running branches
+that were merged every now and then because of how time-consuming the task can be. However with the advent of Distributed VCSs
+merging is much more frequent and you have many more opportunities to generate conflicts with operations that were not used often
+(if not completely missing from centralized VCSs) like cherry-picking, rebasing or stashing.
+
+After a while of dealing with conflicts, developers try their best to avoid them because of how long and how complex it can be to
+take care of them, specially true if the code involved is not familiar to the person trying to merge the code, but once it is in
+front of you there's not much you can do to avoid it. You can either find a way to merge together the conflicting pieces of code...
+or you rewrite the whole section of code from scratch (and let's hope you have a great set of tests to make sure you are not breaking
+anything)... or you can give up and cancel the merge operation and wait for a day with a bluer clearer sky to try again.
+
+Given the amount of time if takes to master the skills to be a proficient {\bf merger} and seeing how little structured material there
+is out there to explain how to deal with conflicts, I have decided to do the proper and write a {\it basic} guide to help people deal
+with them.
+
+I hope that by the time you finish reading this guide you find yourself more comfortable when facing them.
+
+\end{document}
