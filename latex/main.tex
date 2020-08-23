@@ -1,15 +1,47 @@
 % copyright 2020 Edmundo Carmona Antoranz
 % Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
 
-\documentclass{article}
+\documentclass{book}
 
 \title{Conflicts in code \\
 	\large ... and how to deal with them}
 \author{Edmundo Carmona Antoranz}
 \date{\today}
 
-\usepackage{subfiles}
 \usepackage{hyperref}
+\usepackage{listings}
+\usepackage{subfiles}
+\usepackage{xcolor}
+
+
+\definecolor{background_color}{rgb}{0.95,0.95,0.95}
+
+\lstdefinestyle{branch_history_style}{
+    language=bash,
+    numbers=none,
+    backgroundcolor=\color{background_color},
+    showstringspaces=false
+}
+
+\lstdefinestyle{code_section_style}{ % a section of code, can't use a given language highlighting
+    numbers=left,
+    backgroundcolor=\color{background_color},
+    showstringspaces=false
+}
+
+\lstdefinestyle{console_style}{
+    language=bash,
+    numbers=none,
+    backgroundcolor=\color{background_color},
+    showstringspaces=false
+}
+
+\lstdefinestyle{python_style}{
+    language=Python,
+    numbers=left,
+    backgroundcolor=\color{background_color},
+    showstringspaces=false
+}
 
 \begin{document}
 
@@ -27,5 +59,8 @@
 
 \subfile{00_conventions}
 \clearpage
+
+\chapter{Basics}
+\subfile{01_01_what_is_a_conflict}
 
 \end{document}

@@ -1,0 +1,143 @@
+% copyright 2020 Edmundo Carmona Antoranz
+% Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
+
+\section{What is a Conflict?}
+
+A conflict arises when there are two different directions in which the same piece of code was modified. As long as you keep them separate (as in {\it separate branches}) there will be no problem, but when you try to {\bf merge} them, git will stop and ask you for your help so that you can figure out what needs to be done to finish the merge operation.
+
+\subsection{A non-conflict}
+
+Let me introduce you to one of the files that we will be using (with a few variations along the way) as the {\it basis} for some of our examples moving forward.
+
+\subsubsection{Example 0}
+
+\begin{lstlisting}[style=python_style]
+#!/usr/bin/python
+
+import sys
+
+colors = {"black": "black mirror",
+          "white": "white noise",
+          "blue": "blue sky"}
+
+def getPhrase(color):
+    phrase = colors[color]
+    return phrase
+
+print(getPhrase(sys.argv[1]))
+\end{lstlisting}
+
+It's a very simple python script.
+
+Suppose that two developers start working from this file having to add a different color each. {\bf Developer A} produces this:
+
+\begin{lstlisting}[style=python_style]
+#!/usr/bin/python
+
+import sys
+
+colors = {"black": "black mirror",
+          "white": "white noise",
+          "red": "red tide",
+          "blue": "blue sky"}
+
+def getPhrase(color):
+    phrase = colors[color]
+    return phrase
+
+print(getPhrase(sys.argv[1]))
+\end{lstlisting}
+
+We can see that color red was added on line 7.
+
+And {\bf Developer B} produced this:
+\begin{lstlisting}[style=python_style]
+#!/usr/bin/python
+
+import sys
+
+colors = {"black": "black mirror",
+          "green": "green peas",
+          "white": "white noise",
+          "blue": "blue sky"}
+
+def getPhrase(color):
+    phrase = colors[color]
+    return phrase
+
+print(getPhrase(sys.argv[1]))
+\end{lstlisting}
+
+History of the branches looks like this:
+\begin{lstlisting}[style=branch_history_style]
+* d3c8087 (example0/branchB) Adding green peas
+| * 4f281f2 (example0/branchA) Adding red tide
+|/  
+* f44c861 Get a phrase from a color
+\end{lstlisting}
+
+Given that the lines were added at {\it different} locations (separated by the line that defines color white phrase), then git has
+no problem merging them:
+
+\begin{lstlisting}[style=console_style]
+$ git merge example0/branchB --no-edit
+Auto-merging example.py
+Merge made by the 'recursive' strategy.
+ example.py | 1 +
+ 1 file changed, 1 insertion(+)
+\end{lstlisting}
+
+Resulting history looks like this: \footnote{If you attempt to do the merge on your own and the revision ID is not the same,
+that's not a problem. That is to be expected. Same thing applies for all the following examples if you attempt to do them on your own.}
+\begin{lstlisting}[style=branch_history_style]
+*   74a049b Merge branch 'example0/branchB' into example0/branchA
+|\  
+| * d3c8087 (example0/branchB) Adding green peas
+* | 4f281f2 Adding red tide
+|/  
+* f44c861 Get a phrase from a color
+\end{lstlisting}
+
+The resulting file looks like this:
+\begin{lstlisting}[style=python_style]
+#!/usr/bin/python
+
+import sys
+
+colors = {"black": "black mirror",
+          "green": "green peas",
+          "white": "white noise",
+          "red": "red tide",
+          "blue": "blue sky"}
+
+def getPhrase(color):
+    phrase = colors[color]
+    return phrase
+
+print(getPhrase(sys.argv[1]))
+\end{lstlisting}
+
+And you can see how the resulting file has both colors green and red:
+\begin{lstlisting}[style=code_section_style, firstnumber=5]
+colors = {"black": "black mirror", <-- Preexisting line
+          "green": "green peas",   <-- Line from Developer B
+          "white": "white noise",  <-- Preexisting line
+          "red": "red tide",       <-- Line from Developer A
+          "blue": "blue sky"}      <-- Preexisting line
+\end{lstlisting}
+
+This is also visible if you check the annotations of the file:\footnote{Annotations can be generated with
+{\bf git annotate} or {\bf git blame}}
+
+\begin{lstlisting}[style=console_style, basicstyle=\tiny] % FIXME get output that is smaller, the date could be removed)
+^f44c861 (Developer A 2020-03-14 09:49:10 -0600  5) colors = {"black": "black mirror",
+d3c80878 (Developer B 2020-03-14 09:56:34 -0600  6)           "green": "green peas",
+^f44c861 (Developer A 2020-03-14 09:49:10 -0600  7)           "white": "white noise",
+4f281f22 (Developer A 2020-03-14 09:54:08 -0600  8)           "red": "red tide",
+^f44c861 (Developer A 2020-03-14 09:49:10 -0600  9)           "blue": "blue sky"}
+\end{lstlisting}
+
+There we have a successful merge. Git is able to merge the code because they touch different sections of the file.
+Git can see that the two pieces of code are separated by the line defining the white color phrase and so the merge
+goes fine.
+
