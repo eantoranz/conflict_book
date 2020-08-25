@@ -1,7 +1,7 @@
 % copyright 2020 Edmundo Carmona Antoranz
 % Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
 
-\documentclass{book}
+\documentclass{report}
 
 \title{Conflicts in code \\
 	\large ... and how to deal with them}
@@ -17,29 +17,33 @@
 \definecolor{background_color}{rgb}{0.95,0.95,0.95}
 
 \lstdefinestyle{branch_history_style}{
+    backgroundcolor=\color{background_color},
+    basicstyle=\ttfamily,
     language=bash,
     numbers=none,
-    backgroundcolor=\color{background_color},
-    showstringspaces=false
+    showstringspaces=false,
 }
 
 \lstdefinestyle{code_section_style}{ % a section of code, can't use a given language highlighting
-    numbers=left,
     backgroundcolor=\color{background_color},
+    basicstyle=\ttfamily,
+    numbers=left,
     showstringspaces=false
 }
 
 \lstdefinestyle{console_style}{
+    backgroundcolor=\color{background_color},
+    basicstyle=\ttfamily,
     language=bash,
     numbers=none,
-    backgroundcolor=\color{background_color},
     showstringspaces=false
 }
 
 \lstdefinestyle{python_style}{
+    backgroundcolor=\color{background_color},
+    basicstyle=\ttfamily,
     language=Python,
     numbers=left,
-    backgroundcolor=\color{background_color},
     showstringspaces=false
 }
 
@@ -60,7 +64,9 @@
 \subfile{00_conventions}
 \clearpage
 
-\chapter{Basics}
 \subfile{01_01_what_is_a_conflict}
+\clearpage
+
+\subfile{exercises}
 
 \end{document}

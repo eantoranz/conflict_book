@@ -1,0 +1,117 @@
+% copyright 2020 Edmundo Carmona Antoranz
+% Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
+
+\chapter{Exercises}
+
+\section{Exercise 1}
+\label{exercise_01}
+\subsection*{Problem}
+Take branch {\bf exercise1/branchA } from the \hyperref[exercises_repo]{\bf exercises repo}. There is a short list of
+irregular verbs inside {\bf irregular.txt} in alphabetical order. Add these two verbs: {\bf drink} and {\bf know}. Then
+take branch {\bf example1/branchB } and add these other 2 verbs: {\bf lose } and {\bf keep }. Merge the two branches.
+
+\subsection*{Conflict}
+You should see a conflict like this:
+\begin{lstlisting}[style=console_style, numbers=left, caption={\bf Exercise 1} - conflict]
+# List of irregular verbs
+# simple form<tab>past tense<tab>past participle
+catch	caught	caught
+draw	drew	drawn
+drink	drank	drinken
+eat	ate	eaten
+fight	fought	fought
+fly	flew	flown
+grow	grew	grown
+hang	hung	hung
+<<<<<<< HEAD
+know	knew	known
+=======
+keep	kept	kept
+>>>>>>> exercise1/branchB
+let	let	let
+lose	lost	lost
+read	read	read
+run	ran	run
+sleep	slept	slept
+\end{lstlisting}
+
+You might have gotten the conflct section branches in reverse order (first {\bf keep}, then {\bf know}) if you were on {\bf branchB} 
+and then tried to merge {\bf branchA}. Notice how the conflict is only related to {\bf know/keep}. The other two verbs,
+{\bf drink} and {\bf lose}, were merged correctly, even though they come from different branches.
+
+\subsection*{Resolution}
+Given that the verbs are ordered alphabetically, the resulting file looks like this:
+\begin{lstlisting}[style=console_style, numbers=left, caption={\bf Exercise 1} - Resolution]
+# List of irregular verbs
+# simple form<tab>past tense<tab>past participle
+catch	caught	caught
+draw	drew	drawn
+drink	drank	drinken
+eat	ate	eaten
+fight	fought	fought
+fly	flew	flown
+grow	grew	grown
+hang	hung	hung
+keep	kept	kept
+know	knew	known
+let	let	let
+lose	lost	lost
+read	read	read
+run	ran	run
+sleep	slept	slept
+\end{lstlisting}
+Given that the list is sorted alphabetically, {\bf keep} had to be placed before {\bf know}.
+
+
+\section{Exercise 2}
+\label{exercise_02}
+From the \hyperref[exercises_repo]{\bf exercises repo}, merge branches {\bf exercise2/branchA} and {\bf exercise2/branchB}.
+
+\subsubsection*{Conflict}
+\begin{lstlisting}[style=python_style, caption={\bf Exercise 2} - conflict]
+#!/usr/bin/python
+
+import sys
+
+colors = {"black": "black mirror",
+          "white":  "white noise",
+          "blue": "blue sky"}
+
+def getPhrase(color):
+<<<<<<< HEAD
+    phrase = colors[color.lower()]
+=======
+    if color not in colors:
+        sys.stderr.write("Got no phrase for color %s\n" % color)
+        sys.exit(1)
+    phrase = colors[color]
+>>>>>>> exercise2/branchB
+    return phrase
+
+print(getPhrase(sys.argv[1]))
+\end{lstlisting}
+
+\subsubsection*{Resolution}
+Correct resolution {\bf might} be something like this:
+
+\begin{lstlisting}[style=python_style, caption={\bf Exercise 2} - resolution]
+#!/usr/bin/python
+
+import sys
+
+colors = {"black": "black mirror",
+          "white":  "white noise",
+          "blue": "blue sky"}
+
+def getPhrase(color):
+    if color.lower() not in colors:
+        sys.stderr.write("Got no phrase for color %s\n" % color)
+        sys.exit(1)
+    phrase = colors[color.lower()]
+    return phrase
+
+print(getPhrase(sys.argv[1]))
+\end{lstlisting}
+
+If you didn't use the {\bf lower()} call on line 10, it's ok... for the time being. I will explain the rationale to add that call later on. You could have done other things like save color to be lowercase before going into the {\bf if} on line 10 but we will be touching on the things that we could/should do as we go through other topics. Rest assured, this is just a {\bf teaser} of a conflict.
+
