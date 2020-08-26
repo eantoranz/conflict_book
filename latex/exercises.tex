@@ -67,7 +67,7 @@ Given that the list is sorted alphabetically, {\bf keep} had to be placed before
 \label{exercise_02}
 From the \hyperref[exercises_repo]{\bf exercises repo}, merge branches {\bf exercise2/branchA} and {\bf exercise2/branchB}.
 
-\subsubsection*{Conflict}
+\subsection*{Conflict}
 \begin{lstlisting}[style=python_style, caption={\bf Exercise 2} - conflict]
 #!/usr/bin/python
 
@@ -91,7 +91,7 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-\subsubsection*{Resolution}
+\subsection*{Resolution}
 Correct resolution {\bf might} be something like this:
 
 \begin{lstlisting}[style=python_style, caption={\bf Exercise 2} - resolution]
@@ -113,5 +113,74 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-If you didn't use the {\bf lower()} call on line 10, it's ok... for the time being. I will explain the rationale to add that call later on. You could have done other things like save color to be lowercase before going into the {\bf if} on line 10 but we will be touching on the things that we could/should do as we go through other topics. Rest assured, this is just a {\bf teaser} of a conflict.
+If you didn't use the {\bf lower()} call on line 10, it's ok... for the time being. I will explain the rationale to
+add that call later on. You could have done other things like save color to be lowercase before going into the {\bf if} on
+line 10 but we will be touching on the things that we could/should do as we go through other topics. Rest assured, this is just a {\bf teaser} of a conflict.
 
+\section{Exercise 3}
+\label{exercise_03}
+From \hyperref[git_repo]{git's repo}, checkout revision {\bf fe870600fe} and merge {\bf 1bdca81641}
+\footnote{These are the parents of revision {\bf f8cb64e3d4}}. Solve both conflicts (there are 2 conflicting files,
+one conflict section on each one of the files).
+
+\subsection*{Conflict in path.c}
+\begin{lstlisting}[style=c_style, firstnumber=852, caption={\bf Exercise 3} - conflict in {\bf path.c}]
+	if (is_git_directory(".")) {
+<<<<<<< HEAD
+		set_git_dir(".", 0);
+		check_repository_format();
+||||||| 51ebf55b93
+		set_git_dir(".");
+		check_repository_format();
+=======
+		set_git_dir(".");
+		check_repository_format(NULL);
+>>>>>>> 1bdca81641
+		return path;
+	}
+\end{lstlisting}
+I don't think it is too difficult to realize what happened on each branch. On {\bf HEAD} the call to {\bf set\_git\_dir()} got a second
+parameter on line 854. On {\bf the other branch}, the call to {\bf check\_repository\_format()} got a new NULL parameter on line 861.
+That points to having this as the conflict resolution:
+
+\begin{lstlisting}[style=c_style, firstnumber=852, caption={\bf Exercise 3} - resolution to conflict in {\bf path.c}]
+	if (is_git_directory(".")) {
+		set_git_dir(".", 0);
+		check_repository_format(NULL);
+		return path;
+	}
+\end{lstlisting}
+
+\subsection*{Conflict in builtin/pack-objects.c}
+\begin{lstlisting}[style=c_style, basicstyle=\small, firstnumber=880, caption={\bf Exercise 3} - conflict in {\bf builtin/pack-objects.c}]
+	len = encode_in_pack_object_header(header, sizeof(header),
+					   OBJ_REF_DELTA, size);
+	hashwrite(out, header, len);
+<<<<<<< HEAD
+	hashwrite(out, base_oid.hash, 20);
+||||||| 51ebf55b93
+	hashwrite(out, base_sha1, 20);
+=======
+	hashwrite(out, base_sha1, the_hash_algo->rawsz);
+>>>>>>> 1bdca81641
+	copy_pack_data(out, reuse_packfile, w_curs, cur, next - cur);
+	return;
+\end{lstlisting}
+
+In this case, on {\bf HEAD} the second parameter to the {\bf hashwrite()} call was changed from {\bf base\_sha1} on
+line 886 to {\bf base\_oid.hash} on line 884. On {\bf the ther branch}, the {\it third parameter} to the same call was
+changed from {\bf 20} on line 886 to {\bf the\_hash\_algo-$>$rawsz} on line 888. This all points to this as the conflict
+resolution:
+
+\begin{lstlisting}[style=c_style, firstnumber=880, basicstyle=\small, caption={\bf Exercise 3} - conflict in {\bf builtin/pack-objects.c}]
+	len = encode_in_pack_object_header(header, sizeof(header),
+					   OBJ_REF_DELTA, size);
+	hashwrite(out, header, len);
+	hashwrite(out, base_oid.hash, the_hash_algo->rawsz);
+	copy_pack_data(out, reuse_packfile, w_curs, cur, next - cur);
+	return;
+\end{lstlisting}
+
+If you compare with revision {\bf f8cb64e3d4}, you should get no meaningful difference.
+
+As an {\bf additional} exercise, imagine what the task would have been {\it if} {\bf diff3} had not been used.

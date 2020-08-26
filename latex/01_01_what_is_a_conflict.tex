@@ -1,7 +1,6 @@
 % copyright 2020 Edmundo Carmona Antoranz
 % Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
 
-\chapter{Basics}
 \section{What is a Conflict?}
 
 A conflict arises when there are two different directions in which the same piece of code was modified. As long as you keep them separate
@@ -342,6 +341,10 @@ print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
 The two sections are separated by a chain of equal signs.
+
+% TODO talk about that the only thing that can be assured is that only the previous line to the conflict... and the
+% line following the conflict are in all 3 revisions. Everythng else might have been already modified by the (still to
+% be completed merge)
 
 The key question that we should try to answer at this point is: {\it can we solve the conflict?}
 

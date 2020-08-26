@@ -1,0 +1,289 @@
+% copyright 2020 Edmundo Carmona Antoranz
+% Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
+
+\section{Conflicts are a 3-sided coin}
+
+Let's work on our first example from a real project. In this case, \hyperref[git_repo]{git itself}.
+
+\subsection{Example 3 - a git conflict}
+\label{example_03}
+
+From \hyperref[git_repo]{git's repo}, checkout revision {\bf 80648bb3f2} and merge {\bf 20a5fd881a} \footnote{These
+are the parents of revision {\bf 0df82d99da}}. You end up with a conflict in {\bf pack-bitmap.c}:
+% FIXME might need to make it a little narrower
+\begin{lstlisting}[style=c_style, firstnumber=671, caption={\bf example 3} - Conflict in {\bf pack-bitmap.c}]
+	struct bitmap *objects = bitmap_git->result;
+
+<<<<<<< HEAD
+	ewah_iterator_init(&it, type_filter);
+=======
+	if (bitmap_git->reuse_objects == bitmap_git->pack->num_objects)
+		return;
+
+	init_type_iterator(&it, bitmap_git, object_type);
+>>>>>>> 20a5fd881a
+
+	for (i = 0; i < objects->word_alloc &&
+\end{lstlisting}
+
+I hear you this time. Let's keep {\it all the lines}, you say? Which block should come first? {\bf HEAD} or
+{\bf the other branch}'s? Maybe the call to {\bf ewah\_iterator\_init()} should be placed between the conditional and
+the call to {\bf init\_type\_iterator()} on {\bf the other branch}? Perhaps all the lines should be removed, actually?
+Maybe we just need to keep only {\bf a part of it}? Let me show you some scenarios so that you can see what I'm talking about.
+
+\subsubsection{Example 3 - Scenario 1}
+For the sake of the argument, {\bf assume} that the file on {\bf the common ancestor} \footnote{Roughly speaking, the last revision
+present on both branches that are being merged} is like this, at around those lines:\footnote{This is not the real contents
+of {\bf the common ancestor}, by the way. I just want you to assume that this be the case}
+
+\begin{lstlisting}[style=c_style, firstnumber=671, caption={\bf example 3} - Scenario 1 - common ancestor code]
+	struct bitmap *objects = bitmap_git->result;
+
+	ewah_iterator_init(&it, type_filter);
+	if (bitmap_git->reuse_objects == bitmap_git->pack->num_objects)
+		return;
+
+	init_type_iterator(&it, bitmap_git, object_type);
+
+	for (i = 0; i < objects->word_alloc &&
+\end{lstlisting}
+
+If this were the case, that would tip us that, {\it based on the conflict}, each one of the branches removed {\it one piece of 
+the original code}. {\bf HEAD} removed the conditional from line 674 and the call to {\bf init\_type\_iterator()}. {\bf The
+other branch} removed the call to {\bf ewah\_iterator\_init()}.
+
+Then conflict resolution would be:
+\begin{lstlisting}[style=c_style, firstnumber=671, caption={\bf example 3} - Scenario 1 - conflict resolution]
+	struct bitmap *objects = bitmap_git->result;
+
+	for (i = 0; i < objects->word_alloc &&
+\end{lstlisting}
+
+\subsubsection{Example 3 - Scenario 2}
+Now assume that the common ancestor file looks like this:
+
+\begin{lstlisting}[style=c_style, firstnumber=671, caption={\bf example 3} - Scenario 2 - common ancestor code]
+	struct bitmap *objects = bitmap_git->result;
+
+	ewah_iterator_init(&it, type_filter);
+	if (bitmap_git->reuse_objects == bitmap_git->pack->num_objects)
+		return;
+
+	for (i = 0; i < objects->word_alloc &&
+\end{lstlisting}
+
+In this case, {\bf HEAD} removed the conditional started on line 674, {\bf the other branch} removed the call to
+{\bf ewah\_iterator\_init()} and added a call to {\bf init\_type\_iterator()}. That points to having this as the conflict resolution:
+
+\begin{lstlisting}[style=c_style, firstnumber=671, caption={\bf example 3} - Scenario 2 - conflict resolution]
+	struct bitmap *objects = bitmap_git->result;
+
+	init_type_iterator(&it, bitmap_git, object_type);
+
+	for (i = 0; i < objects->word_alloc &&
+\end{lstlisting}
+
+\subsubsection{Example 3 - Scenario 3}
+Finally, assume that the common ancestor file looks like this:
+
+\begin{lstlisting}[style=c_style, firstnumber=671, caption={\bf example 3} - Scenario 3 - common ancestor code]
+	struct bitmap *objects = bitmap_git->result;
+
+	if (bitmap_git->reuse_objects == bitmap_git->pack->num_objects)
+		return;
+
+	for (i = 0; i < objects->word_alloc &&
+\end{lstlisting}
+
+In this scenario, {\bf HEAD} removed the conditional started on line 673, added a call to {\bf ewah\_iterator\_init()}.
+{\bf The other branch} kept the conditional but added a later call to {\bf init\_type\_iterator()}. This begs for {\it yet another}
+different resolution. We need to remove the conditional and keep the two new calls. Which one should come before? That's
+a fairly good question to ask and seeing the code alone won't be able to tell us. You might need more background knowledge
+to be able to solve it properly, or check the requirements that brought in each call\footnote{That can be time consuming, right?}
+. Let's assume, for the sake of moving forward with the example, that we figure out that we should place the call
+to {\bf init\_type\_iterator()} before the call to {\bf ewah\_iterator\_init()}. Then conflict resolution would be:
+
+\begin{lstlisting}[style=c_style, firstnumber=671, caption={\bf example 3} - Scenario 3 - conflict resolution]
+	struct bitmap *objects = bitmap_git->result;
+
+	init_type_iterator(&it, bitmap_git, object_type);
+
+	ewah_iterator_init(&it, type_filter);
+
+	for (i = 0; i < objects->word_alloc &&
+\end{lstlisting}
+
+So 3 different scenarios for {\it the same conflict}. Each scenario meant a different conflict resolution. Now, what I want you
+to realize is this {\bf hard cold truth}: {\bf the common ancestor} \footnote{along with the conflict itself, of course} is driving
+conflict resolution. If you do {\it not} consider {\bf the common ancestor} you would be.... what would be the best word to describe
+it? Oh, yes! {\bf Guessing!} And I don't care how educated your guess is (in terms of background knowledge of the code you are
+working with). You would have to have a memory that beats that provided by git in terms of knowing what code looked like in the past
+so that I stop calling it so.
+
+Having cleared that up, let's continue with the current example. What does {\bf the common ancestor} look like in this case,
+for real? Finding that out is a process that involves more than one step so let's start.
+
+\subsubsection{Example 3 - Solving the conflict for real}
+First things first. What is the common ancestor?
+
+\begin{lstlisting}[style=console_style, caption={\bf example 3} - finging common ancestor]
+$ git merge-base HEAD MERGE_HEAD
+d0654dc308b0ba76dd8ed7bbb33c8d8f7aacd783
+\end{lstlisting}
+
+{\bf The common ancestor} is revision {\bf d0654dc308b0ba76dd8ed7bbb33c8d8f7aacd783}. On that revision, is the file called the same?
+{\bf Let's hope so!} Did the content change much? Perhaps some lines were {\it added} or {\it deleted} before the block we are working
+with? Let's hope it didn't change that much! \footnote {I don't know about you, but I'm not used to crossing fingers
+when I have to do development work... at least, not this often.} Let's give it a try:
+
+\begin{lstlisting}[style=console_style, basicstyle=\small, caption={\bf example 3} - checking ancestor code]
+$ git blame -s -L 671,681 d0654dc30 -- pack-bitmap.c
+fff42755efc 671)        while (roots) {
+fff42755efc 672)                struct object *object = roots->item;
+fff42755efc 673)                roots = roots->next;
+fff42755efc 674) 
+3ae5fa0768f 675)                if (find_pack_entry_one(object->oid.hash, bitmap_git->pack) > 0)
+fff42755efc 676)                        return 1;
+fff42755efc 677)        }
+fff42755efc 678) 
+fff42755efc 679)        return 0;
+fff42755efc 680) }
+fff42755efc 681)
+\end{lstlisting}
+
+{\bf Oops!} We ran out of luck! \footnote{Feeling lucky? Don't sit down to solve conflicts, please. Las Vegas sounds like a more
+suitable place.}  The file hadn't been renamed ({\bf great!}) its {\bf previous} content did change ({\bf bummer!}) and so the
+section we need to look at is not at the same position of the conflict we are dealing with. After surfing the file a little bit,
+we find the block we care about, some 40 lines before where we were hoping it would be:
+
+\begin{lstlisting}[style=console_style, basicstyle=\small, caption={\bf example 3} - checking ancestor code\, 2nd attempt]
+$ git blame -s -L 631,638 d0654dc308b0ba76dd8ed7bbb33c8d8f7aacd783 -- pack-bitmap.c
+3ae5fa0768f 631)        struct bitmap *objects = bitmap_git->result;
+3ae5fa0768f 632) 
+3ae5fa0768f 633)        if (bitmap_git->reuse_objects == bitmap_git->pack->num_objects)
+fff42755efc 634)                return;
+fff42755efc 635) 
+fff42755efc 636)        ewah_iterator_init(&it, type_filter);
+fff42755efc 637) 
+fff42755efc 638)        while (i < objects->word_alloc && ewah_iterator_next(&filter, &it)) {
+\end{lstlisting}
+
+And {\it now} we could compare what each branch did. On {\bf HEAD}, we {\it removed} the conditional started on
+line 633.\footnote{Line 633 of the file in {\bf the common ancestor}}. On {\bf the other branch}, we {\it removed} the call
+to {\bf ewah\_iterator\_init()} and we added a call to {\bf init\_type\_iterator()}. Which means that in our conflict resolution
+we would keep the call to {\bf init\_type\_iterator()} only because the other parts that were present on {\bf the common ancestor}
+are gone:
+
+\begin{lstlisting}[style=c_style, firstnumber=671, caption={\bf example 3} - final resolution]
+	struct bitmap *objects = bitmap_git->result;
+
+	init_type_iterator(&it, bitmap_git, object_type);
+
+	for (i = 0; i < objects->word_alloc &&
+\end{lstlisting}
+
+And by comparing this with {\bf 0df82d99da} you should find no meaningful differences. \footnote{A formatting difference? That's fine! Not publishing this work anywhere, right?}
+
+I hope this time you really got why it's so important to be able to see {\bf the common ancestor} on a conflict. As I said before, if you
+don't consider the common ancestor, you are making an {\it educated guess} at best, a {\bf total disaster} at worst. I agree it
+is {\it a lot of work} if we need to go check what {\bf the common ancestor} code looks like every single time we have a conflict.
+\begin{itemize}
+	\item Finding {\bf the common ancestor}
+	\item Hope the file was not renamed
+	\item Hope we are lucky so the file hasn't changed that much so we can find the original spot fast
+\end{itemize}
+
+What if the file had been renamed? Can we figure out what the original name was easily?
+
+Before you burn the book in frustration, let me show you a little git {\it trick}. git can actually do the work of showing you what
+{\bf the common ancestor} looks like {\it without } additional work on your part. By setting {\bf merge.conflictStyle} to
+{\bf diff3} \footnote{ Run {\bf git config merge.conflictStyle diff3}. Use {\bf --global} if you want it to apply globally on
+your user's config, not on a per-repo basis}, git will kindly add what the common ancestor looked on the section of code that is
+related to the conflict. Let me show you the current conflict after applying this option for your own amusement:
+
+\subsubsection{Example 3 - Solving the conflict for real with {\bf diff3}}
+\begin{lstlisting}[style=c_style, firstnumber=671, caption={\bf example 3} - conflict with {\bf diff3} applied]
+	struct bitmap *objects = bitmap_git->result;
+
+<<<<<<< HEAD
+	ewah_iterator_init(&it, type_filter);
+||||||| d0654dc308
+	if (bitmap_git->reuse_objects == bitmap_git->pack->num_objects)
+		return;
+
+	ewah_iterator_init(&it, type_filter);
+=======
+	if (bitmap_git->reuse_objects == bitmap_git->pack->num_objects)
+		return;
+
+	init_type_iterator(&it, bitmap_git, object_type);
+>>>>>>> 20a5fd881a
+
+	for (i = 0; i < objects->word_alloc &&
+\end{lstlisting}
+
+{\bf Wow!} We get to see {\bf the common ancestor} code between the sections of each branch. git is also kind enough to tell us
+{\bf the common ancestor} revision. Now we can see what each one of the branches did.
+
+In order to solve our conflict, first, start working from {\bf HEAD}:
+\begin{lstlisting}[style=c_style, firstnumber=673, caption={\bf example 3} - step 1]
+<<<<<<< HEAD
+	ewah_iterator_init(&it, type_filter);
+||||||| d0654dc308
+\end{lstlisting}
+
+Then consider how {\bf the other branch} changed {\it from} {\bf the common ancestor}:
+
+\begin{lstlisting}[style=c_style, firstnumber=675, caption={\bf example 3} - step 2]
+||||||| d0654dc308
+	if (bitmap_git->reuse_objects == bitmap_git->pack->num_objects)
+		return;
+
+	ewah_iterator_init(&it, type_filter);
+=======
+	if (bitmap_git->reuse_objects == bitmap_git->pack->num_objects)
+		return;
+
+	init_type_iterator(&it, bitmap_git, object_type);
+>>>>>>> 20a5fd881a
+\end{lstlisting}
+
+The call to {\bf ewah\_iterator\_init()} was removed and a call to {\bf init\_type\_iterator()} was
+added. So we replicate that on {\bf HEAD}:
+
+\begin{lstlisting}[style=c_style, firstnumber=673, caption={\bf example 3} - step 3]
+<<<<<<< HEAD
+	init_type_iterator(&it, bitmap_git, object_type);
+||||||| d0654dc308
+\end{lstlisting}
+
+And we can now remove the remaining conflict block pieces and markers:
+
+\begin{lstlisting}[style=c_style, firstnumber=671, caption={\bf example 3} - Done!]
+	struct bitmap *objects = bitmap_git->result;
+
+	init_type_iterator(&it, bitmap_git, object_type);
+
+	for (i = 0; i < objects->word_alloc &&
+\end{lstlisting}
+
+See? {\bf No hassle!}
+
+But come on! It is {\it possible} to survive solving conflicts without seeing {\bf the common ancestor} block, right?
+But {\it of course!} Just like it's possible to develop software without using any unit tests whatsoever,
+{\it if you know what I mean}. It's not like we need it like oxygen or water. But I already told you the what it is
+like when you decide not to look at {\bf the common ancestor}: It's a {\bf guess}. Using this option to see
+{\bf the common ancestor} code on a conflict is {\bf the single most important tip} in this handbook.
+
+\subsection{Tips}
+\begin{itemize}
+	\item {\bf Always} consider code of {\bf the common ancestor}.
+	\item Set {\bf merge.conflicStyle} to {\bf diff3} to get it shown directly in a conflicting section of code.
+\end{itemize}
+
+\subsection{Exercises}
+\subsubsection{Exercise 3}
+From \hyperref[git_repo]{git's repo}, checkout revision {\bf fe870600fe} and merge {\bf 1bdca81641}
+\footnote{These are the parents of revision {\bf f8cb64e3d4}}. Solve both conflicts (there are 2 conflicting files,
+one conflict section on each one of the files). Solution is \hyperref[example_03]{here}.
+
