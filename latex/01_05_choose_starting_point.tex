@@ -1,0 +1,239 @@
+% copyright 2020 Edmundo Carmona Antoranz
+% Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
+
+\section{Choose your starting point}
+
+\subsection{Example 5}
+\label{example_05}
+
+From \hyperref[git_repo]{git repo}, checkout {\bf 4a12f89865} and merge {\bf aaf633c2ad}.
+\footnote{These are the parents of {\bf f4f8dfe127}}.
+
+\begin{lstlisting}[style=c_style,
+	basicstyle=\tiny,
+	firstnumber=686,
+	caption={\bf example 5} - {\bf CB} in {\bf builtin/gc.c}]
+<<<<<<< HEAD
+if (gc_write_commit_graph &&
+    write_commit_graph_reachable(get_object_directory(),
+				 !quiet && !daemonized ? COMMIT_GRAPH_WRITE_PROGRESS : 0,
+				 NULL))
+	return 1;
+||||||| 9c9b961d7e
+if (gc_write_commit_graph &&
+    write_commit_graph_reachable(get_object_directory(),
+				 !quiet && !daemonized ? COMMIT_GRAPH_PROGRESS : 0,
+				 NULL))
+	return 1;
+=======
+prepare_repo_settings(the_repository);
+if (the_repository->settings.gc_write_commit_graph == 1)
+	write_commit_graph_reachable(get_object_directory(),
+				     !quiet && !daemonized ? COMMIT_GRAPH_PROGRESS : 0,
+				     NULL);
+>>>>>>> aaf633c2ad
+\end{lstlisting}\footnote{This and all of the following code snippets {\it in this chapter} will have
+the code shifted {\it a tab} to the left due to spacing issues but when you are working you should
+keep the original tabs as seen in the original code).}
+
+Following the same technique we have used so far, start working from {\bf UB} (with markers, for clarity):
+
+\begin{lstlisting}[style=c_style,
+	basicstyle=\tiny,
+	firstnumber=686,
+	caption={\bf example 5} - {\bf UB} in {\bf CB}]
+<<<<<<< HEAD
+if (gc_write_commit_graph &&
+    write_commit_graph_reachable(get_object_directory(),
+				 !quiet && !daemonized ? COMMIT_GRAPH_WRITE_PROGRESS : 0,
+				 NULL))
+	return 1;
+||||||| 9c9b961d7e
+\end{lstlisting}
+
+Let's get the {\bf dML}:
+
+\begin{lstlisting}[style=c_style,
+	basicstyle=\tiny,
+	firstnumber=692,
+	caption={\bf example 5} - {\bf MB} and {\bf LB} in {\bf CB}]
+||||||| 9c9b961d7e
+if (gc_write_commit_graph &&
+    write_commit_graph_reachable(get_object_directory(),
+				 !quiet && !daemonized ? COMMIT_GRAPH_PROGRESS : 0,
+				 NULL))
+	return 1;
+=======
+prepare_repo_settings(the_repository);
+if (the_repository->settings.gc_write_commit_graph == 1)
+	write_commit_graph_reachable(get_object_directory(),
+				     !quiet && !daemonized ? COMMIT_GRAPH_PROGRESS : 0,
+				     NULL);
+>>>>>>> aaf633c2ad
+\end{lstlisting}
+
+{\bf dML}: A call to {\bf prepare\_repo\_settings()} was prepended (line 699), the conditional statement was modified
+so that the {\it standalone} variable {\bf gc\_write\_commit\_graph} from line 694 is now part of a {\bf struct * } on
+line 700. The call to {\bf write\_commit\_graph\_reachable()} originally used as part of the conditional statement (line 694) is
+now part of the {\bf if-true} section of the conditional (line 701) so adjusted formatting and finally removed the {\bf return}
+statement (present on line 697).
+
+Let's replicate all those changes on {\bf UB}.
+
+\begin{lstlisting}[style=c_style,
+	basicstyle=\tiny,
+	firstnumber=686,
+	caption={\bf example 5} - Step 1 - Prepend call]
+<<<<<<< HEAD
+prepare_repo_settings(the_repository);
+if (gc_write_commit_graph &&
+    write_commit_graph_reachable(get_object_directory(),
+				 !quiet && !daemonized ? COMMIT_GRAPH_WRITE_PROGRESS : 0,
+				 NULL))
+	return 1;
+||||||| 9c9b961d7e
+\end{lstlisting}
+
+\begin{lstlisting}[style=c_style,
+	basicstyle=\tiny,
+	firstnumber=686,
+	caption={\bf example 5} - Step 2 - adjust conditional]
+<<<<<<< HEAD
+prepare_repo_settings(the_repository);
+if (the_repository->settings.gc_write_commit_graph == 1)
+    write_commit_graph_reachable(get_object_directory(),
+				 !quiet && !daemonized ? COMMIT_GRAPH_WRITE_PROGRESS : 0,
+				 NULL);
+	return 1;
+||||||| 9c9b961d7e
+\end{lstlisting}
+
+\begin{lstlisting}[style=c_style,
+	basicstyle=\tiny,
+	firstnumber=686,
+	caption={\bf example 5} - Step 3 - adjust formatting]
+<<<<<<< HEAD
+prepare_repo_settings(the_repository);
+if (the_repository->settings.gc_write_commit_graph == 1)
+	write_commit_graph_reachable(get_object_directory(),
+				     !quiet && !daemonized ? COMMIT_GRAPH_WRITE_PROGRESS : 0,
+				     NULL);
+	return 1;
+||||||| 9c9b961d7e
+\end{lstlisting}
+
+\begin{lstlisting}[style=c_style,
+	basicstyle=\tiny,
+	firstnumber=686,
+	caption={\bf example 5} - Step 4 - Remove return]
+<<<<<<< HEAD
+prepare_repo_settings(the_repository);
+if (the_repository->settings.gc_write_commit_graph == 1)
+	write_commit_graph_reachable(get_object_directory(),
+				     !quiet && !daemonized ? COMMIT_GRAPH_WRITE_PROGRESS : 0,
+				     NULL);
+||||||| 9c9b961d7e
+\end{lstlisting}
+
+Final result:
+\begin{lstlisting}[style=c_style,
+	basicstyle=\tiny,
+	firstnumber=681,
+	caption={\bf example 5} - final result]
+if (pack_garbage.nr > 0) {
+	close_object_store(the_repository->objects);
+	clean_pack_garbage();
+}
+
+prepare_repo_settings(the_repository);
+if (the_repository->settings.gc_write_commit_graph == 1)
+	write_commit_graph_reachable(get_object_directory(),
+				     !quiet && !daemonized ? COMMIT_GRAPH_WRITE_PROGRESS : 0,
+				     NULL);
+
+if (auto_gc && too_many_loose_objects())
+\end{lstlisting}
+
+All in all, 4 modifications had to be carried out on the {\bf UB} to solve the conflict. Now, we are {\bf not}
+forced to work from {\bf UB}. We can choose to work from {\bf LB} instead.
+
+\subsection{Example 5... from LB}
+
+Let's start over:
+
+\begin{lstlisting}[style=c_style,
+	basicstyle=\tiny,
+	firstnumber=698,
+	caption={\bf example 5} - {\bf LB} in {\bf CB}]
+=======
+prepare_repo_settings(the_repository);
+if (the_repository->settings.gc_write_commit_graph == 1)
+	write_commit_graph_reachable(get_object_directory(),
+				     !quiet && !daemonized ? COMMIT_GRAPH_PROGRESS : 0,
+				     NULL);
+>>>>>>> aaf633c2ad
+\end{lstlisting}
+
+Let's do the {\bf dMU} analysis this time:
+
+\begin{lstlisting}[style=c_style,
+	basicstyle=\tiny,
+	firstnumber=686,
+	caption={\bf example 5} - {\bf UB} and {\bf MB} in {\bf CB}]
+<<<<<<< HEAD
+if (gc_write_commit_graph &&
+    write_commit_graph_reachable(get_object_directory(),
+				 !quiet && !daemonized ? COMMIT_GRAPH_WRITE_PROGRESS : 0,
+				 NULL))
+	return 1;
+||||||| 9c9b961d7e
+if (gc_write_commit_graph &&
+    write_commit_graph_reachable(get_object_directory(),
+				 !quiet && !daemonized ? COMMIT_GRAPH_PROGRESS : 0,
+				 NULL))
+	return 1;
+=======
+\end{lstlisting}
+
+{\bf dMU}: The original {\bf COMMIT\_GRAPH\_PROGRESS} on line 695 is now {\bf COMMIT\_GRAPH\_WRITE\_PROGRESS} on line 689.
+\footnote{Remember this is {\bf dMU} so we analyze from the {\bf MB} to the {\bf UB}, so the analysis has to be done
+going {\bf up}!}
+
+Let's replicate this change on {\bf LB}:
+
+\begin{lstlisting}[style=c_style,
+	basicstyle=\tiny,
+	firstnumber=698,
+	caption={\bf example 5} - Step 1]
+=======
+prepare_repo_settings(the_repository);
+if (the_repository->settings.gc_write_commit_graph == 1)
+	write_commit_graph_reachable(get_object_directory(),
+				     !quiet && !daemonized ? COMMIT_GRAPH_RWITE_PROGRESS : 0,
+				     NULL);
+>>>>>>> aaf633c2ad
+\end{lstlisting}
+
+And we are done! Final result:
+\begin{lstlisting}[style=c_style,
+	basicstyle=\tiny,
+	firstnumber=681,
+	caption={\bf example 5} - final result]
+if (pack_garbage.nr > 0) {
+	close_object_store(the_repository->objects);
+	clean_pack_garbage();
+}
+
+prepare_repo_settings(the_repository);
+if (the_repository->settings.gc_write_commit_graph == 1)
+	write_commit_graph_reachable(get_object_directory(),
+				     !quiet && !daemonized ? COMMIT_GRAPH_WRITE_PROGRESS : 0,
+				     NULL);
+
+if (auto_gc && too_many_loose_objects())
+\end{lstlisting}
+
+Which is exactly like the previous conflict resolution we tried. The only thing is that we had to work {\bf less} because
+we started from the block of code that was more different from {\bf MB}. Less changes to detect and bring
+over... and therefore less opportunities to mess up.
+
