@@ -184,3 +184,79 @@ resolution:
 If you compare with revision {\bf f8cb64e3d4}, you should get no meaningful difference.
 
 As an {\bf additional} exercise, imagine what the task would have been {\it if} {\bf diff3} had not been used.
+
+\section{Exercise 4 - a git conflict}
+\label{exercise_04}
+From \hyperref[git_repo]{git's repo}, checkout {\bf d9d65e9f6a} and merge {\bf b57e8119e6}.
+\footnote{These are the parents of revision {\bf 01f8d78887}}.
+
+\subsection*{CB in contrib/completion/git-completion.bash}
+\begin{lstlisting}[style=c_style,
+	basicstyle=firstnumber=2614,
+	basicstyle=\tiny,
+	caption={\bf Exercise 4} - CB in {\bf contrib/completion/git-completion.bash}]
+<<<<<<< HEAD
+	local subcommands="add status init deinit update summary foreach sync absorbgitdirs"
+||||||| d62dad7a7d
+	local subcommands="add status init deinit update summary foreach sync"
+=======
+	local subcommands="add status init deinit update set-branch summary foreach sync"
+>>>>>>> b57e8119e6
+\end{lstlisting}
+
+\subsection*{Working from {\bf UB} (keeping markers for clarity)}
+\begin{lstlisting}[style=c_style,
+	basicstyle=firstnumber=2614,
+	basicstyle=\tiny,
+	caption={\bf Exercise 4} - UB in {\bf contrib/completion/git-completion.bash}]
+<<<<<<< HEAD
+	local subcommands="add status init deinit update summary foreach sync absorbgitdirs"
+||||||| d62dad7a7d
+\end{lstlisting}
+
+\subsection*{Get {\bf dML}}
+\begin{lstlisting}[style=c_style,
+	basicstyle=firstnumber=2616,
+	basicstyle=\tiny,
+	caption={\bf Exercise 4} - {\bf MB} and {\bf LB} in {\bf contrib/completion/git-completion.bash}]
+||||||| d62dad7a7d
+	local subcommands="add status init deinit update summary foreach sync"
+=======
+	local subcommands="add status init deinit update set-branch summary foreach sync"
+>>>>>>> b57e8119e6
+\end{lstlisting}
+
+{\bf dML}: {\bf set-branch} is added between {\bf update} and {\bf summary} as a {\bf subcommand}.
+
+\subsection*{Apply {\bf dML} on {\bf UB}}
+\begin{lstlisting}[style=c_style,
+	basicstyle=firstnumber=2614,
+	basicstyle=\tiny,
+	caption={\bf Exercise 4} - UB in {\bf contrib/completion/git-completion.bash}]
+<<<<<<< HEAD
+	local subcommands="add status init deinit update set-branch summary foreach sync absorbgitdirs"
+||||||| d62dad7a7d
+\end{lstlisting}
+
+\subsection*{Result}
+\begin{lstlisting}[style=c_style,
+	basicstyle=firstnumber=2610,
+	basicstyle=\tiny,
+	caption={\bf Exercise 4} - UB in {\bf contrib/completion/git-completion.bash}]
+_git_submodule ()
+{
+	__git_has_doubledash && return
+
+	local subcommands="add status init deinit update set-branch summary foreach sync absorbgitdirs"
+	local subcommand="$(__git_find_on_cmdline "$subcommands")"
+\end{lstlisting}
+
+
+\section{Exercise 5 - another git conflict}
+\label{exercise_05}
+From \hyperref[git_repo]{git's repo}, checkout {\bf cf054f817a} and merge {\bf caf388caa1}.
+\footnote{These are the parents of revision {\bf 9b6606f43d}}.
+
+I will let you work on this conflict on your own. There are 5 CBs in 3 files. When you are done, compare
+with {\bf 9b6606f43d} and you should get no meaningful differences.
+
