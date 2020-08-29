@@ -174,10 +174,23 @@ it later}, not actually copying stuff {\it verbatim}.
 
 This task where you {\bf carefully} analyze what has changed (word by word, space by space, tab by tab, parenthesis by parenthesis,
 conditional by conditional, etc etc) has to be done every single time you get a conflict. I would love to be able to provide you with
-a trick that makes this process simpler... but there {\bf isn't} any. One helpful tool you could consider under certain circumstances is to
-use {\bf git diff --color-words} to compare the common ancestor with the two branches or even the branches themselves:
+a trick that makes this process simpler... but there {\bf isn't} any. One helpful tool you could consider under
+certain circumstances is to use {\bf git diff --color-words} to compare the common ancestor with the
+two branches or even the branches themselves:
+\footnote{Notice how I use the branches themselves as parameters {\it and} I also use triple dot {\bf (...)}. That is so that git compares
+not the branches against each other but {\bf their last common ancestor} against the second branch used as argument. That is so that you don't have
+to sit down to try to figure out what the common ancestor was (it is provided in the conflict code block on some conflicts but not on
+others, just in case).}
 
-% TODO add screenshots (and the footnote)
+
+% TODO add terminal output instead of the images
+\begin{figure}[h]
+	\centering
+	\caption{Differences introduced by {\bf branchB}}
+	\includegraphics{color_words_01.png}
+	\caption{Differences introduced by {\bf branchA}}
+	\includegraphics{color_words_02.png}
+\end{figure}
 
 When people decide to cut corners and not do a thorough check for the differences they easily end up with changes that are
 not copied over from the branches involved (or copying things verbatim deleting other changes) and that is what will
