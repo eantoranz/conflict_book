@@ -132,12 +132,12 @@ This is also visible if you check the annotations of the file:\footnote{Annotati
 {\bf git annotate} or {\bf git blame}}
 
 % FIXME get output that is smaller, the date could be removed
-\begin{lstlisting}[style=console_style, basicstyle=\tiny, caption={\bf Example 0} - annotations]
-^f44c861 (Developer A 2020-03-14 09:49:10 -0600  5) colors = {"black": "black mirror",
-d3c80878 (Developer B 2020-03-14 09:56:34 -0600  6)           "green": "green peas",
-^f44c861 (Developer A 2020-03-14 09:49:10 -0600  7)           "white": "white noise",
-4f281f22 (Developer A 2020-03-14 09:54:08 -0600  8)           "red": "red tide",
-^f44c861 (Developer A 2020-03-14 09:49:10 -0600  9)           "blue": "blue sky"}
+\begin{lstlisting}[style=console_style, basicstyle=\small, caption={\bf Example 0} - annotations]
+^f44c861 (Developer A 1584200950 -0600  5) colors = {"black": "black mirror",
+d3c80878 (Developer B 1584201394 -0600  6)           "green": "green peas",
+^f44c861 (Developer A 1584200950 -0600  7)           "white": "white noise",
+4f281f22 (Developer A 1584201248 -0600  8)           "red": "red tide",
+^f44c861 (Developer A 1584200950 -0600  9)           "blue": "blue sky"}
 \end{lstlisting}
 
 There we have a successful merge. Git is able to merge the code because they touch different sections of the file.
