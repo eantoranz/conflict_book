@@ -1,32 +1,38 @@
 % copyright 2020 Edmundo Carmona Antoranz
 % Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
 
-\section{Introduction}
+\section{Introducción}
 
-Developers spend so much time writing code. Actually adding, modifying and deleting code.... moving it around, reformatting it,
-refactoring, improving.... etc. As we have moved to {\bf Distributed Version Control Systems} (or {\it DVCS}, for short), git
-specially, we are running way more often operations that make conflicts show up so, in fact, most of us developers spend some
-time dealing with conflicts, even if painfully, every once in a while.
+Los desarolladores gastan tanto tiempo escribiendo código. Agregando, modificando y borrando código... moviéndolo,
+reformateándolo, reformándolo, mejorándolo\footnote{... la mayoría de las veces}. Dado que nos hemos movido a
+{\bf Sistemas de Control de Versiones Distribuidos} (o {\it DVCS} por sus siglas en inglés), especialmente git,
+estamos ejecutando operaciones que pueden generar conflictos con mucha más frecuencia así que, de hecho, la mayoría
+de los desarrolladores gastamos algo de nuestro tiempo resolviendo conflictos, a veces dolorosamente, cada tanto.
 
-What normally happens is that a project is developed by multiple developers {\it independently} and then all this separate work
-has to be put together. When git tries to merge the work that was developed in two separate directions it tries its best to figure
-out how to put it together programmatically.... however, there are some situations where git will give up and raise its hands asking
-for a person to actually take a look at the code to help git sort it out. When this happens, it is called {\bf a conflict}.
+Lo que normalmente sucede es que un proyecto es desarrollado por múltiples desarrolladores {\it de forma independiente}
+y luego todo este trabajo separado se tiene que juntar. Cuando git trata de mezclar el desarrollo que se hizo en dos direcciones
+diferentes, él trata lo mejor que puede de resolver como juntar todo de forma programada.... sin embargo, hay situaciones en las que
+git tirará la toalla y levantará la mano para pedir ayuda de una persona para lo ayude mirando el código y arreglarlo. Cuando esto
+sucede, se dice que hay un {\it conflicto}.
 
-There's nothing wrong with having conflicts. In the old days when Centralized VCSs were the norm you had these long running branches
-that were merged every now and then because of how time-consuming the task can be. However with the advent of Distributed VCSs
-merging is much more frequent and you have many more opportunities to generate conflicts with operations that were not used often
-(if not completely missing from centralized VCSs) like cherry-picking, rebasing or stashing.
+No hay nada malo en que haya conflictos. En los viejos tiempos, cuando los {\bf Sistema de Control de Versiones Centralizados} eran la
+norma, se tenía estás ramas largas que se mezclaban muy poco por el tiempo que toma resolver todos los conflictos. Sin embargo, con el
+advenimiento de los DVCSs, mezclar se hace de forma mucho más frecuente y hay muchas más oportunidades de generar conflictos con
+operaciones que no se usaban con frecuencia anteriormente (si es que existían en los sistemas centralizados) como cherry-pick,
+rebase o stash.
 
-After a while of dealing with conflicts, developers try their best to avoid them because of how long and how complex it can be to
-take care of them, specially true if the code involved is not familiar to the person trying to merge the code, but once it is in
-front of you there's not much you can do to avoid it. You can either find a way to merge together the conflicting pieces of code...
-or you rewrite the whole section of code from scratch (and let's hope you have a great set of tests to make sure you are not breaking
-anything)... or you can give up and cancel the merge operation and wait for a day with a bluer clearer sky to try again.
+Luego de gastar algo de tiempo resolviendo conflictos, los desarrolladores tienden a hacer todo lo que sea posible por tratar de
+evitarlos por el tiempo que toma y por lo complejo que puede ser resolverlos, especialmente cierto si el código que se está
+trabajando no le es familiar a la persona que está resolviendo el conflicto pero, una vez que el conflicto está delante de
+ti, no hay mucho que se pueda hacer para evitarlo. Se puede buscar una forma de mezclar las partes en conflicto... o se puede
+reescribir la sección en conflicto desde 0 (y esperemos que haya un muy bien et de pruebas para verificar que no se está rompiendo
+nada).... o se puede rendir, cancelar la operación de mezcla y esperar un nuevo día con un cielo más azul y más claropara intentar
+la operación de nuevo.
 
-Given the amount of time if takes to master the skills to be a proficient {\bf merger} and seeing how little structured material there
-is out there to explain how to deal with conflicts, I have decided to do the proper and write a {\it basic} guide to help people deal
-with them.
+Dada la cantidad de tiempo que toma desarrollar las habilidades para ser un {\bf mezclador} eficiente y viendo el poco material
+que hay por ahí disponible para explicar como resolver conflictos, decidí hacer lo propio y me senté a escribir esta guía
+{\it básica} para ayudar a las personas a manejarlos.
 
-I hope that by the time you finish reading this guide you find yourself more comfortable when facing them.
+Espero que cuando hayan terminado la lectura se sientas más tranquilos y cómodos a la hora de enfrentar conflictos.
+
 
