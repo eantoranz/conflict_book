@@ -1,31 +1,33 @@
 % copyright 2020 Edmundo Carmona Antoranz
 % Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
 
-\section{Terms and Acronyms}
+\section{Términos y Acrónimos}
 
-Now that we have seen what conflicts look like (with the common ancestor), I want to introduce a few terms about
-the sections of a conflict that will get rid of some possible ambiguities moving forward.
+Ahora que hemos visto como se ven los conflictos (con {\bf el ancestro común}), quiero presentarles algunos
+términos acerca de las secciones de un conflicto que evitarán algunas ambugüedades futuras.
 
-\subsection{About the sections of a conflict}
+\subsection{Acerca de las secciones de un conflicto}
 
-\subsubsection{Conflict Block or CB}
-A {\bf Conflict Block} starts with the {\bf Conflict Start Marker} and ends with the {\bf Conflict Closing Marker}.
+\subsubsection{Bloque de Conflicto o CB}
+Un {\bf Bloque de Conflicto} o {\bf CB}\footnote{por sus siglas en inglés} comienza con la {\bf Marca de Inicio de Conflicto} y termina con la {\bf Marca de Cierre de Conflicto}.
 
-\subsubsection{Upper Block or UB}
-The top section of a {\bf CB}. This section will {\bf always} hold content as it is in {\bf HEAD}.
+\subsubsection{Bloque Superior o UB}
+El Bloque Superior o {\bf UB} es la sección superior de un {\bf CB}\footnote{por sus siglas en inglés}. Esta sección
+{\bf siempre} tendrá el contenido como se presenta en {\bf HEAD}, es decir, la revisión donde estamos trabajando.
 
-\subsubsection{Middle Block or MB}
-The middle section of a {\bf CB}. This section will show up if you are using {\bf diff3} and,
-{\bf\it during a merge operation}, it will hold content from what we commonly refer to as {\bf the common ancestor}.
+\subsubsection{Bloque Medio o MB}
+El {\bf Bloque Medio} o {\bf MB}\footnote{por sus siglas en inglés} es la sección media de un {\bf CB}. Esta sección aparecerá
+si están usando \hyperref[diff3]{diff3} y, {\bf\it durante una operación de merge}, contendrá lo que normalmente llamamos
+{\bf el ancestro común}.
 
-\subsubsection{Lower Block or LB}
-The bottom section of a {\bf CB}. This section will hold content of what we refer to as {\bf the other branch}
-{\bf\it during a merge operation}.
+\subsubsection{Bloque Inferior o LB}
+El {\bf Bloque Inferior} o {\bf LB}\footnote{por sus siglas en inglés} es la sección inferior de un {\bf CB}. Esta sección
+contendrá, {\bf\it durante una operación de merge}, lo que hay en {\bf la otra rama}.
 
-\subsection{Terms applied on a conflict from Example 3}
+\subsubsection{Términos aplicados en el Ejemplo 3}
 
-From \hyperref[example_03]{Example 3}:
-\begin{lstlisting}[style=c_style, firstnumber=671, caption=Conflict from {\bf example 3}]
+Del \hyperref[example_03]{Ejemplo 3}:
+\begin{lstlisting}[style=c_style, firstnumber=671, caption=Conflicto del {\bf ejemplo 3}]
 	struct bitmap *objects = bitmap_git->result;
 
 <<<<<<< HEAD
@@ -46,7 +48,7 @@ From \hyperref[example_03]{Example 3}:
 \end{lstlisting}
 
 \subsubsection*{CB}
-\begin{lstlisting}[style=c_style, firstnumber=673, caption={\bf CB} from {\bf example 3}]
+\begin{lstlisting}[style=c_style, firstnumber=673, caption={\bf CB} del {\bf ejemplo 3}]
 <<<<<<< HEAD
 	ewah_iterator_init(&it, type_filter);
 ||||||| d0654dc308
@@ -62,31 +64,31 @@ From \hyperref[example_03]{Example 3}:
 >>>>>>> 20a5fd881a
 \end{lstlisting}
 
-\subsubsection*{UB}
-\begin{lstlisting}[style=c_style, firstnumber=674, caption={\bf UB} from {\bf example 3}]
+\paragraph{UB}
+\begin{lstlisting}[style=c_style, firstnumber=674, caption={\bf UB} del {\bf ejemplo 3}]
 	ewah_iterator_init(&it, type_filter);
 \end{lstlisting}
 
-\subsection*{MB}
-\begin{lstlisting}[style=c_style, firstnumber=676, caption=One {\bf MB} from {\bf example 3}]
+\paragraph{MB}
+\begin{lstlisting}[style=c_style, firstnumber=676, caption=One {\bf MB} del {\bf ejemplo 3}]
 	if (bitmap_git->reuse_objects == bitmap_git->pack->num_objects)
 		return;
 
 	ewah_iterator_init(&it, type_filter);
 \end{lstlisting}
 
-\subsubsection*{LB}
-\begin{lstlisting}[style=c_style, firstnumber=681, caption={\bf LB} from {\bf example 3}]
+\paragraph{LB}
+\begin{lstlisting}[style=c_style, firstnumber=681, caption={\bf LB} del {\bf ejemplo 3}]
 	if (bitmap_git->reuse_objects == bitmap_git->pack->num_objects)
 		return;
 
 	init_type_iterator(&it, bitmap_git, object_type);
 \end{lstlisting}
 
-\subsection{Terms applied on one conflict from Exercise 3}
-Conflict from {\bf path.c} of \hyperref[exercise_03]{Exercise 3}:
+\subsubsection{Términos aplicados a un conflicto del Ejercicio 3}
+Conflict from {\bf path.c} of \hyperref[exercise_03]{Ejercicio 3}:
 
-\begin{lstlisting}[style=c_style, firstnumber=852, caption=Conflict on {\bf path.c} from {\bf Exercise 3}]
+\begin{lstlisting}[style=c_style, firstnumber=852, caption=Conflicto en {\bf path.c} del {\bf Ejercicio 3}]
 	if (is_git_directory(".")) {
 <<<<<<< HEAD
 		set_git_dir(".", 0);
@@ -103,8 +105,8 @@ Conflict from {\bf path.c} of \hyperref[exercise_03]{Exercise 3}:
 \end{lstlisting}
 
 
-\subsubsection*{CB}
-\begin{lstlisting}[style=c_style, firstnumber=853, caption={\bf CB} from {\bf Exercise 3}]
+\paragraph{CB}
+\begin{lstlisting}[style=c_style, firstnumber=853, caption={\bf CB} del {\bf Ejercicio 3}]
 <<<<<<< HEAD
 		set_git_dir(".", 0);
 		check_repository_format();
@@ -118,91 +120,91 @@ Conflict from {\bf path.c} of \hyperref[exercise_03]{Exercise 3}:
 \end{lstlisting}
 
 
-\subsubsection*{UB}
-\begin{lstlisting}[style=c_style, firstnumber=854, caption={\bf UB} from {\bf Exercise 3}]
+\paragraph{UB}
+\begin{lstlisting}[style=c_style, firstnumber=854, caption={\bf UB} del {\bf Ejercicio 3}]
 		set_git_dir(".", 0);
 		check_repository_format();
 \end{lstlisting}
 
 \subsubsection*{MB}
-\begin{lstlisting}[style=c_style, firstnumber=857, caption={\bf MB} from {\bf Exercise 3}]
+\begin{lstlisting}[style=c_style, firstnumber=857, caption={\bf MB} del {\bf Ejercicio 3}]
 		set_git_dir(".");
 		check_repository_format();
 \end{lstlisting}
 
-\subsubsection*{LB}
-\begin{lstlisting}[style=c_style, firstnumber=860, caption={\bf LB} from {\bf Exercise 3}]
+\paragraph{LB}
+\begin{lstlisting}[style=c_style, firstnumber=860, caption={\bf LB} del {\bf Ejercicio 3}]
 		set_git_dir(".");
 		check_repository_format(NULL);
 \end{lstlisting}
 
-\subsection{About the differences between them}
+\subsection{Sobre las diferencias entre ellos}
 \subsubsection{dMU}
-The {\bf theoretical} changes that were applied on {\bf MB} to turn it into {\bf UB}, not considering
-middle stages/revisions between the revisions that are being considered.
+Los cambios {\bf aparentes} que son aplicados sobre el {\bf MB} para convertirse en el {\bf UB}, sin considerar
+revisiones intermedias.
 
 \subsubsection{dML}
-The changes that were applied on {\bf MB} to turn it into {\bf LB}, again, not considering
-middle stages/revisions between the revisions that are being considered.
+Los cambios {\bf aparentes} que son aplicados sobre el {\bf MB} para convertirse en el {\bf LB}, sin considerrar
+revisiones intermedias.
 
-\subsection{Terms applied on CB from Example 3}
-\subsubsection{dMU}
-Starting from {\bf MB}
-\begin{lstlisting}[style=c_style, firstnumber=676, caption=One {\bf MB} from {\bf example 3}]
+\subsubsection{Términos aplicados en el CB del Ejemplo 3}
+\paragraph{dMU}
+Arrancando desde el {\bf MB}:
+\begin{lstlisting}[style=c_style, firstnumber=676, caption={\bf MB} del {\bf Ejemplo 3}]
 	if (bitmap_git->reuse_objects == bitmap_git->pack->num_objects)
 		return;
 
 	ewah_iterator_init(&it, type_filter);
 \end{lstlisting}
-Ending up in {\bf UB}:
-\begin{lstlisting}[style=c_style, firstnumber=674, caption={\bf UB} from {\bf example 3}]
+Terminando en el {\bf UB}:
+\begin{lstlisting}[style=c_style, firstnumber=674, caption={\bf UB} del {\bf Ejemplo 3}]
 	ewah_iterator_init(&it, type_filter);
 \end{lstlisting}
 
-{\bf dMU} would be to remove the conditional that started on line 676.
+{\bf dMU}: Remover el condicional que arranca en la línea 676 del {\bf MB}.
 
-\subsubsection{dML}
-Starting from {\bf MB}
-\begin{lstlisting}[style=c_style, firstnumber=676, caption=One {\bf MB} from {\bf example 3}]
+\paragraph{dML}
+Arrancando en el  {\bf MB}:
+\begin{lstlisting}[style=c_style, firstnumber=676, caption={\bf MB} del {\bf Ejemplo 3}]
 	if (bitmap_git->reuse_objects == bitmap_git->pack->num_objects)
 		return;
 
 	ewah_iterator_init(&it, type_filter);
 \end{lstlisting}
-Ending up in {\bf LB}
+Terminando en el {\bf LB}:
 \begin{lstlisting}[style=c_style, firstnumber=681, caption={\bf LB} from {\bf example 3}]
 	if (bitmap_git->reuse_objects == bitmap_git->pack->num_objects)
 		return;
 
 	init_type_iterator(&it, bitmap_git, object_type);
 \end{lstlisting}
-{\bf dML} would be to change the call to {\bf ewah\_iterator\_init()} on line 679 for a call to
-{\bf init\_type\_iterator()} on line 684.
+{\bf dML}: cambiar la llamada a {\bf ewah\_iterator\_init()} en la línea 679 por una llamada
+a {\bf init\_type\_iterator()} en la línea 684.
 
-\subsection{Terms applied on CB from Exercise 3}
-\subsubsection{dMU}
-Starting from {\bf MB}
-\begin{lstlisting}[style=c_style, firstnumber=857, caption={\bf MB} from {\bf Exercise 3}]
+\subsubsection{Términos aplicados a un CB del Ejercicio 3}
+\paragraph{dMU}
+Arrancando desde el {\bf MB}:
+\begin{lstlisting}[style=c_style, firstnumber=857, caption={\bf MB} del {\bf Ejercicio 3}]
 		set_git_dir(".");
 		check_repository_format();
 \end{lstlisting}
-Ending up in {\bf UB}
-\begin{lstlisting}[style=c_style, firstnumber=854, caption={\bf UB} from {\bf Exercise 3}]
+Terminando en el  {\bf UB}:
+\begin{lstlisting}[style=c_style, firstnumber=854, caption={\bf UB} del {\bf Ejercicio 3}]
 		set_git_dir(".", 0);
 		check_repository_format();
 \end{lstlisting}
-{\bf dMU} would be to add a second parameter to the {\bf set\_git\_dir()} call. The second parameter is a {\bf 0}.
+{\bf dMU}: Agregar un segundo parámetro a la llamada a {\bf set\_git\_dir()}. El segundo parámetro es {\bf 0}.
 
-\subsubsection{dML}
-Starting from {\bf MB}
-\begin{lstlisting}[style=c_style, firstnumber=857, caption={\bf MB} from {\bf Exercise 3}]
+\paragraph{dML}
+Arrancando desde el {\bf MB}:
+\begin{lstlisting}[style=c_style, firstnumber=857, caption={\bf MB} del {\bf Ejercicio 3}]
 		set_git_dir(".");
 		check_repository_format();
 \end{lstlisting}
-Ending up in {\bf LB}
-\begin{lstlisting}[style=c_style, firstnumber=860, caption={\bf LB} from {\bf Exercise 3}]
+Terminando en el {\bf LB}:
+\begin{lstlisting}[style=c_style, firstnumber=860, caption={\bf LB} del {\bf Ejercicio 3}]
 		set_git_dir(".");
 		check_repository_format(NULL);
 \end{lstlisting}
-{\bf dML} would be to add {\bf NULL} as a parameter to the {\bf check\_repository\_format()} call.
+{\bf dML}: Agregar {\bf NULL} como un parámetro a la llamada a {\bf check\_repository\_format()}.
 
