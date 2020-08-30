@@ -1,18 +1,18 @@
 % copyright 2020 Edmundo Carmona Antoranz
 % Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
 
-\chapter{Exercises}
+\chapter{Ejercicios}
 
-\section{Exercise 1}
+\section{Ejercicio 1}
 \label{exercise_01}
-\subsection*{Problem}
-Take branch {\bf exercise1/branchA } from the \hyperref[exercises_repo]{\bf exercises repo}. There is a short list of
-irregular verbs inside {\bf irregular.txt} in alphabetical order. Add these two verbs: {\bf drink} and {\bf know}. Then
-take branch {\bf example1/branchB } and add these other 2 verbs: {\bf lose } and {\bf keep }. Merge the two branches.
+\subsection*{Problema}
+Tome la rama {\bf exercise1/branchA } del \hyperref[exercises_repo]{\bf repositorio de ejercicios}. Hay una lista
+e verbos irregulares en inglés dentro de {\bf irregular.txt} en orden alfabético. Agregue estos dos verbos: {\bf drink} y {\bf know}.
+Luego tome {\bf example1/branchB } y agregue estos dos verbos: {\bf lose } y {\bf keep }. Mezcle ambas ramas.
 
-\subsection*{Conflict}
-You should see a conflict like this:
-\begin{lstlisting}[style=console_style, numbers=left, caption={\bf Exercise 1} - conflict]
+\subsection*{Conflicto}
+Se debe ver un conflicto así:L
+\begin{lstlisting}[style=console_style, numbers=left, caption={\bf Ejercicio 1} - conflicto]
 # List of irregular verbs
 # simple form<tab>past tense<tab>past participle
 catch	caught	caught
@@ -35,13 +35,13 @@ run	ran	run
 sleep	slept	slept
 \end{lstlisting}
 
-You might have gotten the conflct section branches in reverse order (first {\bf keep}, then {\bf know}) if you were on {\bf branchB} 
-and then tried to merge {\bf branchA}. Notice how the conflict is only related to {\bf know/keep}. The other two verbs,
-{\bf drink} and {\bf lose}, were merged correctly, even though they come from different branches.
+Puede ser que las secciones del conflicto estén en orden inverso (primero {\bf keep} y luego {\bf know}) si estaban en la rama
+{\bf branchB} e intentaron mezclar la rama {\bf branchA}. Fíjense que el conflicto sol se refiere a {\bf keep/know}. Los otros dos verbos,
+{\bf drink} y {\bf lose}, se mezclaron correctamente, unque vienen de ramas diferentes.
 
-\subsection*{Resolution}
-Given that the verbs are ordered alphabetically, the resulting file looks like this:
-\begin{lstlisting}[style=console_style, numbers=left, caption={\bf Exercise 1} - Resolution]
+\subsection*{Resolución}
+Dado que los verbos se están agregando en orden alfabético, el archivo resultante se debe ver así:
+\begin{lstlisting}[style=console_style, numbers=left, caption={\bf Ejercicio 1} - Resolución]
 # List of irregular verbs
 # simple form<tab>past tense<tab>past participle
 catch	caught	caught
@@ -60,15 +60,15 @@ read	read	read
 run	ran	run
 sleep	slept	slept
 \end{lstlisting}
-Given that the list is sorted alphabetically, {\bf keep} had to be placed before {\bf know}.
+Dado que la lista es alfabética, se debe colocar {\bf keep} seguido de {\bf know}.
 
 
-\section{Exercise 2}
+\section{Ejercicio 2}
 \label{exercise_02}
-From the \hyperref[exercises_repo]{\bf exercises repo}, merge branches {\bf exercise2/branchA} and {\bf exercise2/branchB}.
+Del \hyperref[exercises_repo]{\bf repositorio de ejercicios}, mezcle las ramas {\bf exercise2/branchA} y {\bf exercise2/branchB}.
 
-\subsection*{Conflict}
-\begin{lstlisting}[style=python_style, caption={\bf Exercise 2} - conflict]
+\subsection*{Conflicto}
+\begin{lstlisting}[style=python_style, caption={\bf Ejercicio 2} - conflicto]
 #!/usr/bin/python
 
 import sys
@@ -92,9 +92,9 @@ print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
 \subsection*{Resolution}
-Correct resolution {\bf might} be something like this:
+La solución correcta debe ser algo así:
 
-\begin{lstlisting}[style=python_style, caption={\bf Exercise 2} - resolution]
+\begin{lstlisting}[style=python_style, caption={\bf Ejercicio 2} - resolución]
 #!/usr/bin/python
 
 import sys
@@ -113,9 +113,10 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-If you didn't use the {\bf lower()} call on line 10, it's ok... for the time being. I will explain the rationale to
-add that call later on. You could have done other things like save color to be lowercase before going into the {\bf if} on
-line 10 but we will be touching on the things that we could/should do as we go through other topics. Rest assured, this is just a {\bf teaser} of a conflict.
+Si no colocaron la llamada a {\bf lower()} en la línea 10, está bien... por el momento. Explicaré la lógica
+para agregar la llamada más adelante. Pudieron haber hecho otras cosas como guardar el color para que quede en minúsculas antes
+de entrar al {\bf if} de la línea 10 pero veremos las cosas que se podría/debería hacer a medida que avanzamos en otros tópicos.
+Puedo asegurarles algo, esto es solo un abrebocas de lo que es un conflicto.
 
 \section{Exercise 3}
 \label{exercise_03}

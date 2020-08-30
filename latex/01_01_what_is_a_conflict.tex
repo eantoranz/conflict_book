@@ -1,19 +1,19 @@
 % copyright 2020 Edmundo Carmona Antoranz
 % Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
 
-\section{What is a Conflict?}
+\section{Qué es un conflicto?}
 
-A conflict arises when there are two different directions in which the same piece of code was modified. As long as you keep them separate
-(as in {\it separate branches}) there will be no problem, but when you try to {\bf merge} them, git will stop and ask you for your help
-so that you can figure out what needs to be done to finish the merge operation.
+Un conflicto se presenta cundo hay dos direcciones diferentes en las que una sección de código ha sido modificado. Mientras las
+modificaciones se mantengan separadas (digamos, en {\it ramas diferentes}) no habrá problema, pero al tratar de mezclarlas, git se detendrá
+y pedirá ayuda para saber qué se debe hacer y terminar la operación.
 
-\subsection{Example 0 - A non-conflict}
+\subsection{Ejemplo 0 - Un no-conflicto}
 \label{example_00}
 
-Let me introduce you to one of the files that we will be using (with a few variations along the way) as the {\it basis} for some of our
-examples moving forward.
+Permítanme presentarles uno de los scripts que vamos a utilizar (con algunas variaciones por el camino) como la {\it base} para
+algunos de nuestros ejemplos.
 
-\begin{lstlisting}[style=python_style, caption={\bf Example 0} - common ancestor]
+\begin{lstlisting}[style=python_style, caption={\bf Ejemplo 0} - ancestro común]
 #!/usr/bin/python
 
 import sys
@@ -29,11 +29,12 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-It's a very simple python script.
+Es un script python muy sencillo
 
-Suppose that two developers start working from this file having to add a different color each. {\bf Developer A} produces this:
+Supongamos que dos desarrolladores comienzan a trabajar a partir de él para agregar un color diferente. El {\bf Desarrollador A}
+produce esto:
 
-\begin{lstlisting}[style=python_style, caption={\bf Example 0} - Developer A]
+\begin{lstlisting}[style=python_style, caption={\bf Ejemplo 0} - Desarrollador A]
 #!/usr/bin/python
 
 import sys
@@ -50,10 +51,10 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-We can see that color red was added on line 7.
+Se puede ver que se agregó el color rojo en la línea 7.
 
-And {\bf Developer B} produced this:
-\begin{lstlisting}[style=python_style, caption={\bf Example 0} - Developer B]
+Y el {\bf Desarrollador B} produjo esto:
+\begin{lstlisting}[style=python_style, caption={\bf Ejemplo 0} - Desarrollador B]
 #!/usr/bin/python
 
 import sys
@@ -70,7 +71,9 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-History of the branches looks like this:
+Se puede que se agregó el color verde en a línea 6.
+
+La historia de las ramas en este punto se ve así::
 \begin{lstlisting}[style=branch_history_style, caption={\bf Example 0} - branch history]
 * d3c8087 (example0/branchB) Adding green peas
 | * 4f281f2 (example0/branchA) Adding red tide
@@ -78,10 +81,10 @@ History of the branches looks like this:
 * f44c861 Get a phrase from a color
 \end{lstlisting}
 
-Given that the lines were added at {\it different} locations (separated by the line that defines color white phrase), then git has
-no problem merging them:
+Dado que las líneas fueron agregadas en posiciones {\it diferentes} (separadas por la línea que define el color blanco), entonces
+git no tiene ningún problema en mezclarlas:
 
-\begin{lstlisting}[style=console_style, caption={\bf Example 0} - git merge output]
+\begin{lstlisting}[style=console_style, caption={\bf Ejemplo 0} - salida de {\bf git merge}]
 $ git merge example0/branchB --no-edit
 Auto-merging example.py
 Merge made by the 'recursive' strategy.
@@ -89,9 +92,10 @@ Merge made by the 'recursive' strategy.
  1 file changed, 1 insertion(+)
 \end{lstlisting}
 
-Resulting history looks like this: \footnote{If you attempt to do the merge on your own and the revision ID is not the same,
-that's not a problem. That is to be expected. Same thing applies for all the following examples if you attempt to do them on your own.}
-\begin{lstlisting}[style=branch_history_style, caption={\bf Example 0} - final branch history]
+La historia resultante se ve así: \footnote{Si intenta hacer la mezcla por su lado y el ID de la revisión resultante no es la misma,
+eso no es un problema. Es algo de esperar. Lo mismo sudecerá con todos los ejemplos que siguen si intentan hacerlas por su cuenta.}
+
+\begin{lstlisting}[style=branch_history_style, caption={\bf Ejemplo 0} - historia final de las ramas]
 *   74a049b Merge branch 'example0/branchB' into example0/branchA
 |\  
 | * d3c8087 (example0/branchB) Adding green peas
@@ -100,8 +104,8 @@ that's not a problem. That is to be expected. Same thing applies for all the fol
 * f44c861 Get a phrase from a color
 \end{lstlisting}
 
-The resulting file looks like this:
-\begin{lstlisting}[style=python_style, caption={\bf Example 0} - merged code]
+El archivo resultante se ve así:
+\begin{lstlisting}[style=python_style, caption={\bf Ejemplo 0} - código mezclado]
 #!/usr/bin/python
 
 import sys
@@ -119,20 +123,20 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-And you can see how the resulting file has both colors green and red:
-\begin{lstlisting}[style=code_section_style, firstnumber=5, caption={\bf Example 0} - colors section]
-colors = {"black": "black mirror", <-- Preexisting line
-          "green": "green peas",   <-- Line from Developer B
-          "white": "white noise",  <-- Preexisting line
-          "red": "red tide",       <-- Line from Developer A
-          "blue": "blue sky"}      <-- Preexisting line
+Y se puede ver que el archivo resultante tiene ambos colores rojo y verde:
+\begin{lstlisting}[style=code_section_style, firstnumber=5, caption={\bf Ejemplo 0} - sección de los colores]
+colors = {"black": "black mirror", <-- Linea preexistente
+          "green": "green peas",   <-- Linea del Desarrollador B
+          "white": "white noise",  <-- Linea preexistente
+          "red": "red tide",       <-- Linea del Desarrollador A
+          "blue": "blue sky"}      <-- Linea preexistente
 \end{lstlisting}
 
-This is also visible if you check the annotations of the file:\footnote{Annotations can be generated with
-{\bf git annotate} or {\bf git blame}}
+Esto también se puede ver se se ven las anotaciones del archivo:\footnote{las anotaciones se pueden ver con
+{\bf git annotate} o con {\bf git blame}}
 
 % FIXME get output that is smaller, the date could be removed
-\begin{lstlisting}[style=console_style, basicstyle=\small, caption={\bf Example 0} - annotations]
+\begin{lstlisting}[style=console_style, basicstyle=\small, caption={\bf Ejemplo 0} - anotaciones]
 ^f44c861 (Developer A 1584200950 -0600  5) colors = {"black": "black mirror",
 d3c80878 (Developer B 1584201394 -0600  6)           "green": "green peas",
 ^f44c861 (Developer A 1584200950 -0600  7)           "white": "white noise",
@@ -140,16 +144,16 @@ d3c80878 (Developer B 1584201394 -0600  6)           "green": "green peas",
 ^f44c861 (Developer A 1584200950 -0600  9)           "blue": "blue sky"}
 \end{lstlisting}
 
-There we have a successful merge. Git is able to merge the code because they touch different sections of the file.
-Git can see that the two pieces of code are separated by the line defining the white color phrase and so the merge
-goes fine.
+Y ahí tenemos una mezcla exitosa. Git fue capaz de hacer la mezcla porque se modifican secciones diferentes del
+archivo. Git puede ver que las dos secciones están separadas por una línea que define la frase del color blanco
+y por eso la mezcla se puede hacer.
 
-Let's go back to our common ancestor and let's show 2 different conflict examples.
-\subsection{Example 1 - A simple conflict}
+Vamos de nuevo a nuestro ancestro común y mostremos 2 ejemplos de conflictos.
+\subsection{Ejemplo 1 - Un conflicto sencillo}
 \label{example_01}
 
-First (again) {\bf the common ancestor}, which is the same common ancestor we used for \hyperref[example_00]{example 0}.
-\begin{lstlisting}[style=python_style, caption={\bf Example 1} - common ancestor]
+Primero (de nuevo), {\bf el ancestro común}, que es el ancestro común que utilizamos en el \hyperref[example_00]{ejemplo 0}.
+\begin{lstlisting}[style=python_style, caption={\bf Ejemplo 1} - ancestro común]
 #!/usr/bin/python
 
 import sys
@@ -165,11 +169,11 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-Now, just like we did in our previous example, let's have our two developers add exactly the same colors that were added
-before but, instead of doing it on separate places, they will do it at exactly the same spot.
+Ahora, como hicimos anteriormente, hagamos que nuestros 2 desarrolladores agreguen exactamente los mismos colores del
+ejemplo anterior pero, en vez de hacerlo sobre sitios diferentes, que lo hagan exactamente en la misma posición.
 
-{\bf Developer A} adds color red on line 7:
-\begin{lstlisting}[style=python_style, caption={\bf example 1} - Developer A]
+El {\bf Desarrollador A} arega el color rojo en la línea 7:
+\begin{lstlisting}[style=python_style, caption={\bf Ejemplo 1} - Desarrollador A]
 #!/usr/bin/python
 
 import sys
@@ -186,8 +190,8 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-{\bf Developer B} adds color green {\it also} on line 7:
-\begin{lstlisting}[style=python_style, caption={\bf example 1} - Developer B]
+El {\bf Desarrollador B} agrega el color verde {\it también} en la línea 7:
+\begin{lstlisting}[style=python_style, caption={\bf Ejemplo 1} - Desarrollador B]
 #!/usr/bin/python
 
 import sys
@@ -204,26 +208,26 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-The new branch history would be something like this:
-\begin{lstlisting}[style=branch_history_style, caption={\bf Example 1} - branch history]
+La nueva historia de las ramas se ve así:
+\begin{lstlisting}[style=branch_history_style, caption={\bf Ejemplo 1} - historia de las ramas]
 * 6e7707e (example1/branchB) Adding green peas
 | * 3633ec9 (HEAD -> example1/branchA) Adding red tide
 |/  
 * 9f086a6 Get a phrase from a color
 \end{lstlisting}
 
-It's basically the same example only that the colors were added at the same spot. If somebody were to ask git to merge both
-branches, we would see something {\it very} different from \hyperref[example_00]{example 0}:
+Es básicamente el mismo ejemplo solo que los colores fueron agregados en la misma línea.Si alguien le pidiera a git
+que mezcle ambas ramas, se debería ver algo bastante diferente de lo que se vio en el \hyperref[example_00]{ejemplo 0}:
 
-\begin{lstlisting}[style=console_style, caption={\bf Example 1} - git merge output]
+\begin{lstlisting}[style=console_style, caption={\bf Ejemplo 1} - salida de {\bf git merge}]
 $ git merge example1/branchB
 Auto-merging example.py
 CONFLICT (content): Merge conflict in example.py
 Automatic merge failed; fix conflicts and then commit the result
 \end{lstlisting}
 
-The status of the {\bf working tree} at the moment:
-\begin{lstlisting}[style=console_style, caption={\bf Example 1} - git status]
+El estado del {\bf árbol de trabajo} en este momento:
+\begin{lstlisting}[style=console_style, caption={\bf Ejemplo 1} - git status]
 $ git status
 On branch example1/branchA
 You have unmerged paths.
@@ -237,13 +241,13 @@ Unmerged paths:
 no changes added to commit (use "git add" and/or "git commit -a")
 \end{lstlisting}
 
-It can be seen how {\bf example.py} is listed in the section called {\bf Unmerged paths}. It's telling us it is the kind of conflict
-where both branches modified a file in different {\it conflicting} directions and have produced a {\bf Content conflict}.
-\footnote{Conflicts are normally related to content conflicts, however there is another kind of conflict, {\bf tree conflcts}, that
-we will talk about later}
+Se puede ver que {\bf example.py} está listado en la sección llamada {\bf Unmerged paths} (rutas no mezcladas). Eso nos dice que
+es el tipo de conflicto donde las dos ramas modificaron un archivo en direcciones {\it en conflicto} y que han producido un
+{\bf Conflicto de Contenido}.\footnote{Los conflictos normalmente son de contenido, sin embargo hay otro tipo de conflictos,
+{\bf conflictos de árbol}, de los que hablaremos más adelante}
 
-The resulting file would look something like this:
-\begin{lstlisting}[style=python_style, caption={\bf example 1} - conflicting file]
+El archivo resultante se vería así:
+\begin{lstlisting}[style=python_style, caption={\bf Ejemplo 1} - archivo en conflicto]
 #!/usr/bin/python
 
 import sys
@@ -264,11 +268,11 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-git tried its best to figure out what to do but, given that the two branches do different things at the exact same location
-in the code, it asks us to give it a hand so that the code can be merged.
+Git trató lo mejor que pudo de resolver qué había que hacer y, dado que las dos ramas hacen cosas diferentes en el
+mismopunto, git nos pide que le echemos una mano para que el código sea mezclado.
 
-The conflicting portion of code is, as you might have guessed:
-\begin{lstlisting}[style=python_style, firstline=7, firstnumber=7, lastline=11, caption={\bf example 1} - conflict section]
+La sección de conflicto, como se pueden imaginar, es:
+\begin{lstlisting}[style=python_style, firstline=7, firstnumber=7, lastline=11, caption={\bf Ejemplo 1} - Sección en conflicto]
 #!/usr/bin/python
 
 import sys
@@ -289,22 +293,22 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-This conflict has 2 {\it sections}. The first section is how the code looks on {\bf HEAD}.
-\footnote{In git jargon, {\bf HEAD} is always the revision that we are working on. It is very important to understand
-that this is not the same as the last revision on a repo, or the last revision on a branch. If you checked out {\bf main~5}
-, you will place {\bf HEAD} 5 revisions back from the tip of {\bf main}.}, and we can see it at the conflict starter mark, on
-line 7.
+El conflicto tiene 2 {\it secciones}. La primera seccion es como se ve el código en {\bf HEAD}.
+\footnote{En el argot de git, {\bf HEAD} es siempre la revisión sobre la que se está trabajando. Es muy importante entender
+que esto no es lo mismo que la úĺtima revisión de un repo, o la última revisión de una rama. Si se hace un checkout de
+{\bf main~5}, se colocará {\bf HEAD} 5 revisiones detrás de la punta de la rama {\bf main}.}, y se puede ver {\bf HEAD} en la
+marca de comienzo de conflicto, en la línea 7.
 
-\begin{lstlisting}[style=python_style, firstline=7, firstnumber=7, lastline=9, caption={\bf example 1} - {\bf HEAD} section]
+\begin{lstlisting}[style=python_style, firstline=7, firstnumber=7, lastline=9, caption={\bf Ejemplo 1} - sección de {\bf HEAD}]
 #!/usr/bin/python
 
 import sys
 
 colors = {"black": "black mirror",
           "white": "white noise",
-<<<<<<< HEAD <-- conflict section start marker
+<<<<<<< HEAD <-- marca de inicio de conflicto
           "red": "red tide",
-======= <-- separation between HEAD and the other branch
+======= <-- separador entre HEAD y la otra rama
           "green": "green peas",
 >>>>>>> example1/branchB
           "blue": "blue sky"}
@@ -316,10 +320,10 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-The second section is how the conflicting section of code looks on the other branch that we asked to merge.
-Git tips us that the name of the branch is {\bf example1/branchB} on the conflict end marker, on line 11:
+La segunda sección es como se ve el código de la sección del conflicto en {\bf la otra rama} que pedimos mezclar. Git
+nos indica que el nombre de la otra rama es {\bf example1/branchA} en la marca de cierre el conflicto, en la línea 11:
 
-\begin{lstlisting}[style=python_style, firstline=9, firstnumber=9, lastline=11, caption={\bf example 1} - {\bf HEAD} section]
+\begin{lstlisting}[style=python_style, firstline=9, firstnumber=9, lastline=11, caption={\bf Ejemplo 1} - sección de {\bf la otra rama}]
 #!/usr/bin/python
 
 import sys
@@ -328,9 +332,9 @@ colors = {"black": "black mirror",
           "white": "white noise",
 <<<<<<< HEAD
           "red": "red tide",
-======= <-- separation between HEAD and the other branch
+======= <-- separador entre HEAD y la otra rama
           "green": "green peas",
->>>>>>> example1/branchB <-- conflict section end marker
+>>>>>>> example1/branchB <-- marca de final de conflicto
           "blue": "blue sky"}
 
 def getPhrase(color):
@@ -340,18 +344,17 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-The two sections are separated by a chain of equal signs.
+Las 2 secciones están separadas por una serie de signos de igual.
 
 % TODO talk about that the only thing that can be assured is that only the previous line to the conflict... and the
 % line following the conflict are in all 3 revisions. Everythng else might have been already modified by the (still to
 % be completed merge)
 
-The key question that we should try to answer at this point is: {\it can we solve the conflict?}
+La pregunta clave que tendríamos que responder en este punto es: {\it podemos resolver este conflicto?}
+Probalemente estén pensado {\bf pero por supuesto!} Solo agregamos la línea del color nuev de cada rama para que todos
+los colores queden en el diccionario.
 
-You are probably thinking: {\bf But of course!} Just set a line for each one of the new colors and we are done so that
-we get all colors in the dictionary.
-
-\begin{lstlisting}[style=python_style, caption={\bf example 1} - {\bf HEAD} solved conflict]
+\begin{lstlisting}[style=python_style, caption={\bf Ejemplo 1} - conflicto resuelto]
 #!/usr/bin/python
 
 import sys
@@ -369,15 +372,15 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-Congrats! You have solved your {\it first} (right?) conflict. The following steps are required by git in order
-to consider that the file has been merged to wrap up the merge operation:
+Felicitaciones! Ya resolveron su {\it primer} (cierto?) conflicto. Los siguientes pasos son requeridos por git para poder
+terminar con la operación de mezcla.
 
-\subsection{How to wrap up a conflict?}
+\subsection{Como finalizar un conflicto?}
 % TODO try to run the merge --continue and see how it fails, then explain
 
-If at this point you run {\bf git status}, you will see that nothing has changed, from git's point of view:
+Si en este punto corriéramos {\bf git status}, verían que nada ha cambiado aún, desde el punto de vista de git:
 
-\begin{lstlisting}[style=console_style, caption={\bf git status} after solving the conflict]
+\begin{lstlisting}[style=console_style, caption={\bf git status} luego de editar el archivo]
 $ git status
 On branch example1/branchA
 You have unmerged paths.
@@ -391,7 +394,8 @@ Unmerged paths:
 no changes added to commit (use "git add" and/or "git commit -a")
 \end{lstlisting}
 
-Git wasn't paying attention to you editing the file. We need to specifically take the file as it is right now:
+Git no le estuvo prestando atención al archivo. Necesitamos decirle a git que tome el archivo como está en este
+momento y lo coloque en el {\it índice}
 
 \begin{lstlisting}[style=console_style, caption={\bf git add; git status}]
 $ git add example.py 
@@ -404,20 +408,20 @@ Changes to be committed:
         modified:   example.py
 \end{lstlisting}
 
-When all files have been merged/added to index, a revision is finally created by running {\bf git merge --continue}. First
-you should get an editor with some default content for what the revision comment will be.
+Cuando todos los archivos estén mezclados/agregados al índice, una revisión se puede crear corriendo {\bf git merge --continue}.
+Esto hará que continúe el flujo de creación de la revisión como si hiciéramos un {\bf git commit} con un editor de texto
+donde colocaremos el comentario de la revisión, y al guardar y salir se creará la revisión finalmente. Aquí está como se
+ve al correr el {\bf git merge --continue} y saliendo del editor de texto:
 % TODO show how the editor looks
-Edit the content to what you find appropriate. Save and exit. When you exit the editor, the merge revision will be created.
-Here it is how it looks after going out of the editor:
 % FIXME tus is too wide
 \begin{lstlisting}[style=console_style, caption={\bf git merge --continue}]
 $ git merge --continue
 [example1/branchA 03938ed] Merge branch 'example1/branchB' into example1/branchA
 \end{lstlisting}
 
-Then, we get our merge revision:
+Finalmente obtenemos la nueva revisión:
 % FIXME this is too wide
-\begin{lstlisting}[style=console_style, caption={\bf example 1} - final branch history]
+\begin{lstlisting}[style=console_style, caption={\bf Ejemplo 1} - historia final de las ramas]
 *   03938ed (example1/branchA) Merge branch 'example1/branchB' into example1/branchA
 |\  
 | * 6e7707e (example1/branchB) Adding green peas
@@ -428,12 +432,12 @@ Then, we get our merge revision:
 
 % TODO run the final script (example 1) so we can see that it works for both colors
 
-\subsection{Example 2 - Another simple example}
+\subsection{Ejemplo 2 - Otro ejemplo sencillo}
 \label{example_02}
 
-Let's try another simple example. Using the same common ancestor as before (we were using only 3 colors, remember?),
-now {\bf Developer A} ends up with this:
-\begin{lstlisting}[style=python_style, caption={\bf example 2} - Developer A]
+Intentemos otro ejemplo sencillo. Usando el mismo ancestro común de antes (teníamos 3 colores, cierto?),
+ahora el {\bf Desarrollador A} nos presenta esto:
+\begin{lstlisting}[style=python_style, caption={\bf Ejemplo 2} - Desarrollador A]
 #!/usr/bin/python
 
 import sys
@@ -450,15 +454,15 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-This is something different. The output phrase now contains the color and then the associated phrase,
-separated by a colon (line 11). If we run it with blue, we get:
-\begin{lstlisting}[style=console_style, caption={\bf example 2} - running script from Developer A]
+Esto es algo diferente. La frase de salida ahora contiene el color y la frase asociada, separados por {\bf :} (línea 11).
+Si corremos el script con {\bf blue}, obtenemos:
+\begin{lstlisting}[style=console_style, caption={\bf Ejemplo 2} - Ejecutando el script del Desarrollador A]
 $ ./example.py blue
 blue: blue sky
 \end{lstlisting}
 
-{\bf Developer B} ended up with this:
-\begin{lstlisting}[style=python_style, caption={\bf example 2} - Developer B]
+El {\bf Desarrollador B} termina con esto:
+\begin{lstlisting}[style=python_style, caption={\bf Ejemplo 2} - Desarrollador B]
 #!/usr/bin/python
 
 import sys
@@ -475,24 +479,23 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-{\bf Developer B} is adding an {\bf upper()} call to set the phrase in uppercase (line 11). If we run the script
-like we did before:
-
-\begin{lstlisting}[style=console_style, caption={\bf example 2} - running script from Developer B]
+El {\bf Desarrollador B} está agregando una llamada a {\bf upper()} para colocar la frase en mayúsculas (linea 11). Si ejecutamos el
+script como hicimos antes:
+\begin{lstlisting}[style=console_style, caption={\bf Ejemplo 2} - ejecutando el script del Desarrollador B]
 $ ./example.py blue
 BLUE SKY
 \end{lstlisting}
 
-And history looks like this:
-\begin{lstlisting}[style=console_style, caption={\bf example 2} - branch history]
+Y la historia se ve así:
+\begin{lstlisting}[style=console_style, caption={\bf Ejemplo 2} - historia de las ramas]
 * 9b9d7b2 (example2/branchB) Using upper on the phrase
 | * c944ee5 (example2/branchA) Showing color and phrase
 |/  
 * 8c9d315 Get a phrase from a color
 \end{lstlisting}
 
-And we can foresee the conflict if we tried to merge this time, don't we?
-\begin{lstlisting}[style=python_style, caption={\bf example 2} - Conflicted file]
+Y esta vez podemos predecir el conflicto que vamos a tener al intentar mezclar, cierto?
+\begin{lstlisting}[style=python_style, caption={\bf Ejemplo 2} - Archivo en conflicto]
 #!/usr/bin/python
 
 import sys
@@ -513,9 +516,9 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-In this case, let's keep the line where we set the phrase to have the original color, then we do the {\bf upper()} call
-and it should be good:
-\begin{lstlisting}[style=python_style, caption={\bf example 2} - Resolved conflict]
+En este caso retengamos la línea donde colocamos el color original en la frase, luego hacemos una llamada a {\bf upper()}
+y eso sería todo:
+\begin{lstlisting}[style=python_style, caption={\bf Ejemplo 2} - Conflicto resuelto]
 #!/usr/bin/python
 
 import sys
@@ -533,34 +536,36 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-And if we run the resulting script:
-\begin{lstlisting}[style=console_style, caption={\bf example 2} - running resulting script]
+Y si ejecutamos el script final:
+\begin{lstlisting}[style=console_style, caption={\bf Ejemplo 2} - ejecutando el script final]
 $ ./example.py blue
 BLUE: BLUE SKY
 \end{lstlisting}
 
-\subsection{Questions}
-Here are some things to think about:
+\subsection{Preguntas}
+Estas son algunas preguntas sobre las cuales pensar:
 
-\subsubsection{Q: Could the lines be set in reverse order?}
-Sure! It all depends on what the requirements are from each branch and how they should behave in the current revision.
-On \hyperref[example_01]{example 1}, it was just adding elements to a dictionary so there was no meaningful difference.
-If they were being ordered {\it alphabetically} then order would matter. On \hyperref[example_02]{example 2} it's very important
-the order in which you put them. If the {\bf upper()} call had been placed {\it before} re-setting the phrase to include the
-original color, then the original color would end up {\it not} being in uppercase. Is that correct? Perhaps! The
-{\bf requirements} (not just the conflicting code) might need to be considered to know what to do in this case.
+\subsubsection{P: Se podría colocar las líneas de forma inversa?}
+Claro! Todo depende de lo que indiquen los requerimientos de cada rama y como se deben comportar en la revisión actual.
+En el \hyperref[example_01]{ejemplo 1}, solo se trataba de agregar elementos a un diccionario así que no había diferencia
+significativa si se colocaban las líneas de forma inversa. Si en ese ejemplo se colocaran los colores de forma alfabética,
+entonces el orden si sería importante. En este ejemplo, si la llamada a {\bf upper()} se colocara {\it antes} de colocar
+el color original en la frase, entonces las mayúsculas solo afectarían a la frase, no al color original. Eso es correcto?
+Quizás! Considerar los {\bf requerimientos} (no solo el código en conflicto) podrían ser necesarios para saber qué hacer
+en este caso.
 
-\subsubsection{Q: Could it be written in a completely different way?}
-Sure! As long as the {\bf intent} of what the different branches meant to do is included in the conflict resolution, it will be OK.
-\footnote{Just in case, playing around with code while solving a conflict comes with a price tag. I will talk about that later
-with more detail.}
+\subsubsection{P: Se podría escribir de una forma completamente diferente?}
+Por supuesto! Mientras las {\bf intenciones} de lo que quería hacer cada rama se incluyan en la resolución del conflicto,
+estará bien.\footnote{De todos modos, jugar con el código mientras se resuelven conflictos tiene un precio. Hablaremos de ello
+más adelante con más detalle.}
 
-\subsubsection{Q: What would the conflict look like if the branches are reversed when merging?}
-In \hyperref[example_02]{example 2}, working on {\bf example2/branchB}, I try to merge {\bf example2/branchA}. What would be the result?
-It would look {\bf exactly the same} only that the conflict sections for each branch would be reversed and the name of the branch would
-change on the conflict closing mark:
+\subsubsection{P: Cómo se vería el conflicto si las ramas hubieran estado invertidas al mezclar?}
+En el \hyperref[example_02]{ejemplo 2}, trabajando sobre {\bf example2/branchB}, trato de mezclar {\bf example2/branchA}.
+Cual sería el resultado?
+Se vería {\bf exactamente igual} solo que en la sección en conflicto, las secciones de cada rama estarían invertidas
+ y el nombre de la rama en la marca de cierre de conflicto sería otra:
 
-\begin{lstlisting}[style=python_style, firstnumber=11, caption={\bf example 2} - inverted conflict]
+\begin{lstlisting}[style=python_style, firstnumber=11, caption={\bf ejemplo 2} - conflicto invertido]
 <<<<<<< HEAD
     phrase = phrase.upper()
 =======
@@ -568,14 +573,13 @@ change on the conflict closing mark:
 >>>>>>> example2/branchA
 \end{lstlisting}
 
-\subsection{Exercises}
-\subsubsection{Exercise 1}
-Take branch {\bf exercise1/branchA } from the \hyperref[exercises_repo]{\bf exercises repo}. There is a short list of
-irregular verbs inside {\bf irregular.txt} in alphabetical order. Add these two verbs: {\bf drink} and {\bf know}. Then
-take branch {\bf example1/branchB } and add these other 2 verbs: {\bf lose } and {\bf keep }. Merge the two branches. Solution
-is \hyperref[exercise_01]{here}. \footnote{ Who says we can't practice english while programming? }
+\subsection{Ejercicios}
+\subsubsection{Ejercicio 1}
+Tome la rama {\bf exercise1/branchA } del \hyperref[exercises_repo]{\bf repositorio de ejercicios}. Hay una lista
+e verbos irregulares en inglés dentro de {\bf irregular.txt} en orden alfabético. Agregue estos dos verbos: {\bf drink} y {\bf know}.
+Luego tome {\bf example1/branchB } y agregue estos dos verbos: {\bf lose } y {\bf keep }. Mezcle ambas ramas. La solución está
+\hyperref[exercise_01]{aquí}. \footnote{ Quien dice que no se puede practicar inglés mientras se programa? }
 
-\subsubsection{Exercise 2}
-From the \hyperref[exercises_repo]{\bf exercises repo}, merge branches {\bf exercise2/branchA} and {\bf exercise2/branchB}.
-Solution is \hyperref[exercise_02]{here}.
-
+\subsubsection{Ejercicio 2}
+Del \hyperref[exercises_repo]{\bf repositorio de ejercicios}, mezcle las ramas {\bf exercise2/branchA} y {\bf exercise2/branchB}.
+La solución está \hyperref[exercise_02]{aquí}.
