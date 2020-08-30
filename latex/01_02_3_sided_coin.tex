@@ -29,12 +29,18 @@ are the parents of revision {\bf 0df82d99da}}. You end up with a conflict in {\b
 I hear you this time. Let's keep {\it all the lines}, you say? Which block should come first? {\bf HEAD} or
 {\bf the other branch}'s? Maybe the call to {\bf ewah\_iterator\_init()} should be placed between the conditional and
 the call to {\bf init\_type\_iterator()} on {\bf the other branch}? Perhaps all the lines should be removed, actually?
-Maybe we just need to keep only {\bf a part of it}? Let me show you some scenarios so that you can see what I'm talking about.
+Maybe we just need to keep only {\bf a part of it}?
+
+Are all of those scenarios possible? Ah, yes, they are all {\it possible}. And are they all {\it\bf correct}? Ah, {\bf nope}.
+Given that they end up being very different in terms of what the code will end up doing, not all of them are correct. But then,
+is it a guessing game we play in order to solve conflicts? Nope, no need to guess. You may not be aware of it yet but all you
+need is a little bit more information... information that, by the way, is not provided to us in the conflict as we see it there.
+Let me show you some possibilities with a little more information so you can see what's going on.
 
 \subsubsection{Example 3 - Scenario 1}
-For the sake of the argument, {\bf assume} that the file on {\bf the common ancestor} \footnote{Roughly speaking, the last revision
-present on both branches that are being merged} is like this, at around those lines:\footnote{This is not the real contents
-of {\bf the common ancestor}, by the way. I just want you to assume that this be the case}
+For the sake of explanation, {\bf assume} that the file on {\bf the common ancestor} \footnote{Roughly speaking, the last revision
+present on both branches that are being merged} is like this, at around those lines:\footnote{This is {\bf not} the real contents
+of {\bf the common ancestor}, by the way. I just want you to {\it assume} that this be the case}
 
 \begin{lstlisting}[style=c_style, firstnumber=671, caption={\bf example 3} - Scenario 1 - common ancestor code]
 	struct bitmap *objects = bitmap_git->result;
