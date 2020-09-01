@@ -1,14 +1,14 @@
 % copyright 2020 Edmundo Carmona Antoranz
 % Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
 
-\section{Consider intents against the common ancestor}
-No need to be showing full ancestor and branches code separately anymore. Only showing the conflicted file or {\bf CB} should
-be enough. Take this example of a conflict:
+\section{La intención es lo que cuenta}
+Ya no hay necesidad de mostrar el ancestro y las ramas por separado. Solo mostrar el archivo con conflicto
+o el {\bf CB} debería ser suficiente. Tomemos este ejemplo de un conflicto:
 
-\subsection{Example 4 - conflict on our beloved script}
+\subsection{Ejemplo 4 - conflicto sobre nuestro adorado script}
 \label{example_04}
 
-\begin{lstlisting}[style=python_style, caption={\bf example 4}]
+\begin{lstlisting}[style=python_style, caption={\bf Ejemplo 4}]
 #!/usr/bin/python
 
 import sys
@@ -36,16 +36,17 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-If you jump right in, you could solve it as we did before. Start working on {\bf UB}\footnote{Including conflict markers, for clarity}:
-\begin{lstlisting}[style=python_style, firstnumber=10, caption={\bf example 4} - Step 1 - UB]
+Se podría resolver como lo hemos hecho hasta ahora. Se comienza a trabajar en el {\bf UB}\footnote{Se incluyen
+los marcadores de conflicto para dar claridad}:
+\begin{lstlisting}[style=python_style, firstnumber=10, caption={\bf Ejemplo 4} - Paso 1 - UB]
 <<<<<<< HEAD
     phrase = "%s: %s" % (color, colors[color])
     return phrase
 ||||||| c8bf13a
 \end{lstlisting}
 
-Now we consider {\bf dML}:
-\begin{lstlisting}[style=python_style, firstnumber=13, caption={\bf example 4} - Step 2 - dML]
+Ahora consideramos el {\bf dML}:
+\begin{lstlisting}[style=python_style, firstnumber=13, caption={\bf Ejemplo 4} - Paso 2 - dML]
 ||||||| c8bf13a
     phrase = colors[color]
     return phrase
@@ -58,11 +59,11 @@ Now we consider {\bf dML}:
         sys.exit(1)
 >>>>>>> example4/branchB
 \end{lstlisting}
-{\bf dML}: There is a new condition that first checks if the color exists (line 17). If it doesn't, it fails on the else block (lines 20-22).
-Preexisting lines were put inside the if block and got their indentation adjusted for that reason (lines 18-19). Let's first copy over
-those lines from {\bf LB} to {\bf UB}.
+{\bf dML}: Hay una nueva condición que verifica que el color esté definido (línea 17). Si no existe, cae en el bloque {\it else}
+(líneas 20-22). Las líneas preexistentes se colocaron dentro del condicional y se ajustó su indentación por esa razón (líneas
+18-19). Primero, copiemos esas líneas desde el {\bf LB} hacia el {\bf UB}.
 
-\begin{lstlisting}[style=python_style, firstnumber=10, caption={\bf example 4} - Step 3 - Copy from LB]
+\begin{lstlisting}[style=python_style, firstnumber=10, caption={\bf Ejemplo 4} - Paso 3 - Copiar desde el LB]
 <<<<<<< HEAD
     if color in colors:
         phrase = colors[color].upper()
@@ -72,20 +73,20 @@ those lines from {\bf LB} to {\bf UB}.
         sys.exit(1)
 ||||||| c8bf13a
 \end{lstlisting}
-We {\it almost} got it. But there's a problem: Because we {\bf copied over content verbatim}, we lost the rephrased line as we had
-it on th {\bf UB}, remember? Look at {\bf UB} before we started solving the conflict section again (line 11):
+{\bf Casi} lo tenemos. Pero hay un problema: Como copiamos el contenido {\it verbatim}, perdimos la línea del {\bf UB}
+donde se estaba cambiando la frase para incluir el color original. Miren el {\bf UB} antes de comenzar a resolver de nuevo (línea 11):
 
-\begin{lstlisting}[style=python_style, firstnumber=10, caption={\bf example 4} - Step 1 - UB]
+\begin{lstlisting}[style=python_style, firstnumber=10, caption={\bf Ejemplo 4} - Paso 1 - UB]
 <<<<<<< HEAD
     phrase = "%s: %s" % (color, colors[color])
     return phrase
 ||||||| c8bf13a
 \end{lstlisting}
 
-Ok... then we could replace the line where we get the value from the array and we should be fine:
-\footnote{That is, {\bf if} you were careful enough to save the {\bf UB} content before you replaced it. Most likely, you didn't so
-you will probably endup reverting the operation to get the original content}
-\begin{lstlisting}[style=python_style, firstnumber=10, caption={\bf example 4} - Step 4 - Edit UB]
+Ok, entonces debemos poder reemplazar la línea donde colocamos el valor desde el diccionario y con eso estaría bien:
+\footnote{Eso es, {\bf si} hubieran sido suficientemente cuidadosos de guardar el contenido del {\bf UB}. Como probablemente no lo hicieron,
+tocaría comenzar a resolver el conflicto desde el principio}
+\begin{lstlisting}[style=python_style, firstnumber=10, caption={\bf Ejemplo 4} - Paso 4 - Editar el UB]
 <<<<<<< HEAD
     if color in colors:
         phrase = "%s: %s" % (color, colors[color])
@@ -96,20 +97,20 @@ you will probably endup reverting the operation to get the original content}
 ||||||| c8bf13a
 \end{lstlisting}
 
-This is not correct either. Now we lost the {\bf upper()} call coming from {\bf LB}. So, we can't just copy changes verbatim
-from one block to the other? It really depends on what the lines are about. In this case we have a line that is getting changes from
-{\bf both} branches, so we need to consider the {\bf intent} of {\it both} branches, not the literal changes.
+Eso {\bf tampoco} es correcto. Ahora se pierde la llamada a {\bf upper()} que viene del {\bf LB}. Así que no podemos copiar cambios
+{\bf verbatim} de un bloque al otro? Todo depende de lo que se traten los cambios. En este caso la línea está recibiendo
+cambios por las dos ramas así que debemos considerar la {\bf intención} de ambas, no los cambios literales.
 
-Let's start over solving the conflict from scratch from {\bf UB}:
-\begin{lstlisting}[style=python_style, firstnumber=10, caption={\bf example 4} - Step 1 - UB]
+Comencemos a resolver el conflicto desde el principio, en el {\bf UB}:
+\begin{lstlisting}[style=python_style, firstnumber=10, caption={\bf Ejemplo 4} - Paso 1 - UB]
 <<<<<<< HEAD
     phrase = "%s: %s" % (color, colors[color])
     return phrase
 ||||||| c8bf13a
 \end{lstlisting}
 
-A new condition is added and we copy it over:\footnote{Step 2 is {\bf dML}, that hasn't changed.}
-\begin{lstlisting}[style=python_style, firstnumber=10, caption={\bf example 4} - Step 3 - Conditional]
+El {\bf dML} (paso 2) no ha cambiado. Una nueva condición se agregó y la copiamos en el paso 3:
+\begin{lstlisting}[style=python_style, firstnumber=10, caption={\bf Ejemplo 4} - Paso 3 - Conditional]
 <<<<<<< HEAD
     if color in colors:
     phrase = "%s: %s" % (color, colors[color])
@@ -117,8 +118,8 @@ A new condition is added and we copy it over:\footnote{Step 2 is {\bf dML}, that
 ||||||| c8bf13a
 \end{lstlisting}
 
-We need to adjust indentation for those lines just like it was done on the other branch:
-\begin{lstlisting}[style=python_style, firstnumber=10, caption={\bf example 4} - Step 4 - Adjust indentation]
+Necesitamos ajustar la indentación de las lineas como se hizo en {\bf la otra rama}:
+\begin{lstlisting}[style=python_style, firstnumber=10, caption={\bf Ejemplo 4} - Paso 4 - Adjustar indentación]
 <<<<<<< HEAD
     if color in colors:
         phrase = "%s: %s" % (color, colors[color])
@@ -126,8 +127,8 @@ We need to adjust indentation for those lines just like it was done on the other
 ||||||| c8bf13a
 \end{lstlisting}
 
-We add the {\bf upper()} call:
-\begin{lstlisting}[style=python_style, firstnumber=10, caption={\bf example 4} - Step 5 - {\bf upper()} call]
+Agregamos la llamada a {\bf upper()}:
+\begin{lstlisting}[style=python_style, firstnumber=10, caption={\bf Ejemplo 4} - Paso 5 - llamada a {\bf upper()}]
 <<<<<<< HEAD
     if color in colors:
         phrase = "%s: %s" % (color, colors[color].upper())
@@ -135,8 +136,8 @@ We add the {\bf upper()} call:
 ||||||| c8bf13a
 \end{lstlisting}
 
-Add the else block:
-\begin{lstlisting}[style=python_style, firstnumber=10, caption={\bf example 4} - Step 6 - {\bf else} block]
+Agregamos el bloque {\it else}:
+\begin{lstlisting}[style=python_style, firstnumber=10, caption={\bf Ejemplo 4} - Paso 6 - bloque {\bf else}]
 <<<<<<< HEAD
     if color in colors:
         phrase = "%s: %s" % (color, colors[color].upper())
@@ -146,9 +147,9 @@ Add the else block:
         sys.exit(1)
 ||||||| c8bf13a
 \end{lstlisting}
-And now we have reached the solution to the conflict. Remove the other sections of the conflict and the conflict markers:
+Y ahora llegamos a la solución del conflicto. Remuevan las otras partes del conflicto y los marcadores:
 
-\begin{lstlisting}[style=python_style, caption={\bf example 4} - final]
+\begin{lstlisting}[style=python_style, caption={\bf Ejemplo 4} - final]
 #!/usr/bin/python
 
 import sys
@@ -168,45 +169,44 @@ def getPhrase(color):
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
 
-But then, if we can't copy over code from any of the two branches, how do we work around it? The trick is to {\bf replicate changes}
-that were introduced from {\bf dML} and put them on {\bf UB}\footnote{It could be the other way around, actually. But I will talk about
-it later}, not actually copying stuff {\it verbatim}.
+Pero entonces, si no podemos copiar código de una rama a la otra, como hacemos el trabajo? El truco es {\bf replicar los cambios}
+que fueron incluidos en el {\bf dML} y colocarlos en el {\bf UB}, no copiar los cambios.
 
-This task where you {\bf carefully} analyze what has changed (word by word, space by space, tab by tab, parenthesis by parenthesis,
-conditional by conditional, etc etc) has to be done every single time you get a conflict. I would love to be able to provide you with
-a trick that makes this process simpler... but there {\bf isn't} any. One helpful tool you could consider under
-certain circumstances is to use {\bf git diff --color-words} to compare the common ancestor with the
-two branches or even the branches themselves:
-\footnote{Notice how I use the branches themselves as parameters {\it and} I also use triple dot {\bf (...)}. That is so that git compares
-not the branches against each other but {\bf their last common ancestor} against the second branch used as argument. That is so that you don't have
-to sit down to try to figure out what the common ancestor was (it is provided in the conflict code block on some conflicts but not on
-others, just in case).}
+Este trabajo donde se debe analizar {\bf cuidadosamente} lo que ha cambiado (palabra por palabra, espacio por espacio, tab a tab,
+paréntesis a paréntesis, condicional a condicional) debe ser hecho en cada uno de los conflictos a los que se enfrenten. Me encantaría
+darles un truco para pode hacer este trabajo más sencillo... pero no lo hay. Una herramienta valiosa que podrían utilizar
+bajo ciertas circunstancias es usar {\bf git diff --color-words} para comparar {\bf el ancestro común} con las ramas... o incluso
+las ramas entre ellas:
+\footnote{Fíjense como uso las propias ramas como parámetros {\bf y} también en el uso del triple punto {\bf (...)}. Eso es para que
+git no compare las ramas entre allas sino {\bf el ancestro común} de ambas ramas contra la segunda rama usada como arfumento. Eso es para
+no tener que calcular cual es {\bf el ancestro común} (git provee la revisión de {\bf el ancestro común} en unos conflictos, pero
+no en otros, por si acaso).}
 
 
 % TODO add terminal output instead of the images
 \begin{figure}[h]
 	\centering
-	\caption{Differences introduced by {\bf branchB}}
+	\caption{Diferencias introducidas por la rama {\bf branchB}}
 	\includegraphics{color_words_01.png}
-	\caption{Differences introduced by {\bf branchA}}
+	\caption{Diferencias introducidas por la rama {\bf branchA}}
 	\includegraphics{color_words_02.png}
 \end{figure}
 
-When people decide to cut corners and not do a thorough check for the differences they easily end up with changes that are
-not copied over from the branches involved (or copying things verbatim deleting other changes) and that is what will
-eventually end up exploding later on, sometimes in a {\it BIG... SPECTACULAR... FLASHY WAY.... {\bf in production}}. Certainly not
-the best of all places to find out that there was some change that was not carried over when a merge was done a few
-months or weeks before.
+Cuando las personas deciden no hacer este trabajo exhaustivamente, fácilmente se escapan detalles de las ramas involucradas
+(o se copia cambios {\it verbatim} borrando otros cambios) y eso es lo que eventualmente podría reventar tiempo después, algunas
+veces de forma {\it GRANDE.... ESPECTACULAR... FULGURANTE.... {\bf en producción}}. Ciertamente no el mejor sitio para
+enterarse de que no se trajo un cambio en un merge hace algunas semanas o meses.
 
-If code is added on one branch, it should probably end up on the resulting code as well, just like we did with the else section of
-code \footnote{I'm not saying copied over verbatim. There might things that have to be adjusted. A variable name was changed? Guess
-what you will have to do.}. And deleted code is a special case that has to be analyzed carefully and I will take care of it later on.
+Si se agrega código a una rama, probablemente debería quedar en el código resultante, justo como hicimos con la sección {\bf else}
+\footnote{No estoy diciendo copiar verbatim. Podría ser necesario hacer ajustes. El nombre de una variable cambió? Adivinen
+lo que tendrán que hacer}. Y el código borrado es un caso especial que debe ser analizado cuidadosamente por lo que estaré
+abordándolo más adelante.
 
-\subsection{Exercises}
-\subsubsection{Exercise 4 - a git conflict}
-From \hyperref[git_repo]{git's repo}, checkout {\bf d9d65e9f6a} and merge {\bf b57e8119e6}.
-\footnote{These are the parents of revision {\bf 01f8d78887}}. Solution is \hyperref[exercise_04]{here}.
+\subsection{Ejercicios}
+\subsubsection{Ejercicio 4 - un conflicto en git}
+Del \hyperref[git_repo]{repo de git}, hagan checkout de la revisión {\bf d9d65e9f6a} y hagan {\it merge} de {\bf b57e8119e6}.
+\footnote{Estos son los padres de la revisión {\bf 01f8d78887}} La solución está \hyperref[exercise_04]{aquí}.
 
-\subsubsection{Exercise 5 - another git conflict}
-From \hyperref[git_repo]{git's repo}, checkout {\bf cf054f817a} and merge {\bf caf388caa1}.
-\footnote{These are the parents of revision {\bf 9b6606f43d}}. Solution is \hyperref[exercise_05]{here}.
+\subsubsection{Ejercicio 5 - otro conflicto en git}
+Del \hyperref[git_repo]{repo de git}, hagan checkout de la revisión {\bf cf054f817a} y hagan {\it merge} de {\bf caf388caa1}.
+\footnote{Estos son los padres de la revisión {\bf 9b6606f43d}} La solution está \hyperref[exercise_05]{aquí}.

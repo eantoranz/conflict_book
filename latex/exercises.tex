@@ -186,16 +186,16 @@ Si comparan con la revisión {\bf f8cb64e3d4}, ne deberían obtener diferencias 
 
 Como ejercicio {\bf adicional},  imaginen lo que tendrían que hacer para resolver esos conflictos si no usaran {\bf diff3}.
 
-\section{Exercise 4 - a git conflict}
+\section{Ejercicio 4 - un conflicto de git}
 \label{exercise_04}
-From \hyperref[git_repo]{git's repo}, checkout {\bf d9d65e9f6a} and merge {\bf b57e8119e6}.
-\footnote{These are the parents of revision {\bf 01f8d78887}}.
+Del \hyperref[git_repo]{repo de git}, hagan checkout de la revisión {\bf d9d65e9f6a} y hagan {\it merge} de {\bf b57e8119e6}
+\footnote{Estos son los padres de la revisión {\bf 01f8d78887}}.
 
-\subsection*{CB in contrib/completion/git-completion.bash}
+\subsection*{CB en contrib/completion/git-completion.bash}
 \begin{lstlisting}[style=c_style,
 	basicstyle=firstnumber=2614,
 	basicstyle=\tiny,
-	caption={\bf Exercise 4} - CB in {\bf contrib/completion/git-completion.bash}]
+	caption={\bf Ejercicio 4} - CB en {\bf contrib/completion/git-completion.bash}]
 <<<<<<< HEAD
 	local subcommands="add status init deinit update summary foreach sync absorbgitdirs"
 ||||||| d62dad7a7d
@@ -205,21 +205,21 @@ From \hyperref[git_repo]{git's repo}, checkout {\bf d9d65e9f6a} and merge {\bf b
 >>>>>>> b57e8119e6
 \end{lstlisting}
 
-\subsection*{Working from {\bf UB} (keeping markers for clarity)}
+\subsection*{Trabajando en el {\bf UB} (mantenemos los marcadores por claridad)}
 \begin{lstlisting}[style=c_style,
 	basicstyle=firstnumber=2614,
 	basicstyle=\tiny,
-	caption={\bf Exercise 4} - UB in {\bf contrib/completion/git-completion.bash}]
+	caption={\bf Ejercicio 4} - UB en {\bf contrib/completion/git-completion.bash}]
 <<<<<<< HEAD
 	local subcommands="add status init deinit update summary foreach sync absorbgitdirs"
 ||||||| d62dad7a7d
 \end{lstlisting}
 
-\subsection*{Get {\bf dML}}
+\subsection*{Analizar {\bf dML}}
 \begin{lstlisting}[style=c_style,
 	basicstyle=firstnumber=2616,
 	basicstyle=\tiny,
-	caption={\bf Exercise 4} - {\bf MB} and {\bf LB} in {\bf contrib/completion/git-completion.bash}]
+	caption={\bf Ejercicio 4} - {\bf MB} y {\bf LB} en {\bf contrib/completion/git-completion.bash}]
 ||||||| d62dad7a7d
 	local subcommands="add status init deinit update summary foreach sync"
 =======
@@ -227,23 +227,23 @@ From \hyperref[git_repo]{git's repo}, checkout {\bf d9d65e9f6a} and merge {\bf b
 >>>>>>> b57e8119e6
 \end{lstlisting}
 
-{\bf dML}: {\bf set-branch} is added between {\bf update} and {\bf summary} as a {\bf subcommand}.
+{\bf dML}: se agrega {\bf set-branch} entre {\bf update} y {\bf summary} como un nuevo {\bf subcomando}.
 
-\subsection*{Apply {\bf dML} on {\bf UB}}
+\subsection*{Aplicar {\bf dML} en el {\bf UB}}
 \begin{lstlisting}[style=c_style,
 	basicstyle=firstnumber=2614,
 	basicstyle=\tiny,
-	caption={\bf Exercise 4} - UB in {\bf contrib/completion/git-completion.bash}]
+	caption={\bf Ejercicio 4} - UB en {\bf contrib/completion/git-completion.bash}]
 <<<<<<< HEAD
 	local subcommands="add status init deinit update set-branch summary foreach sync absorbgitdirs"
 ||||||| d62dad7a7d
 \end{lstlisting}
 
-\subsection*{Result}
+\subsection*{Resultado}
 \begin{lstlisting}[style=c_style,
 	basicstyle=firstnumber=2610,
 	basicstyle=\tiny,
-	caption={\bf Exercise 4} - UB in {\bf contrib/completion/git-completion.bash}]
+	caption={\bf Ejercicio 4} - UB en {\bf contrib/completion/git-completion.bash}]
 _git_submodule ()
 {
 	__git_has_doubledash && return
@@ -253,11 +253,10 @@ _git_submodule ()
 \end{lstlisting}
 
 
-\section{Exercise 5 - another git conflict}
+\section{Ejercicio 5 - otro conflicto en git}
 \label{exercise_05}
-From \hyperref[git_repo]{git's repo}, checkout {\bf cf054f817a} and merge {\bf caf388caa1}.
-\footnote{These are the parents of revision {\bf 9b6606f43d}}.
+Del \hyperref[git_repo]{repo de git}, hagan checkout de la revisión {\bf cf054f817a} y hagan {\it merge} de {\bf caf388caa1}.
+\footnote{Estos son los padres de la revisión {\bf 9b6606f43d}}
 
-I will let you work on this conflict on your own. There are 5 CBs in 3 files. When you are done, compare
-with {\bf 9b6606f43d} and you should get no meaningful differences.
-
+Dejaré que trabajen en la solución por su cuenta. Hay 5 {\bf CBs} en 3 archivos. Cuando terminen, comparen
+con {\bf 9b6606f43d} y no deberían tener diferencias significativas.
