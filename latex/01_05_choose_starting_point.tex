@@ -209,7 +209,7 @@ Let's replicate this change on {\bf LB}:
 prepare_repo_settings(the_repository);
 if (the_repository->settings.gc_write_commit_graph == 1)
 	write_commit_graph_reachable(get_object_directory(),
-				     !quiet && !daemonized ? COMMIT_GRAPH_RWITE_PROGRESS : 0,
+				     !quiet && !daemonized ? COMMIT_GRAPH_WRITE_PROGRESS : 0,
 				     NULL);
 >>>>>>> aaf633c2ad
 \end{lstlisting}
