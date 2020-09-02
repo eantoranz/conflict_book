@@ -1,18 +1,18 @@
 % copyright 2020 Edmundo Carmona Antoranz
 % Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
 
-\section{Choose your starting point}
+\section{Selecciona tu punto de partida}
 
-\subsection{Example 5}
+\subsection{Ejemplo 5}
 \label{example_05}
 
-From \hyperref[git_repo]{git repo}, checkout {\bf 4a12f89865} and merge {\bf aaf633c2ad}.
-\footnote{These are the parents of {\bf f4f8dfe127}}.
+Desde el \hyperref[git_repo]{repo de git}, hagan checkout {\bf 4a12f89865} y mezclen {\bf aaf633c2ad}.
+\footnote{Estos son los padres de la revisión {\bf f4f8dfe127}}.
 
 \begin{lstlisting}[style=c_style,
 	basicstyle=\tiny,
 	firstnumber=686,
-	caption={\bf example 5} - {\bf CB} in {\bf builtin/gc.c}]
+	caption={\bf Ejemplo 5} - {\bf CB} en {\bf builtin/gc.c}]
 <<<<<<< HEAD
 if (gc_write_commit_graph &&
     write_commit_graph_reachable(get_object_directory(),
@@ -32,16 +32,17 @@ if (the_repository->settings.gc_write_commit_graph == 1)
 				     !quiet && !daemonized ? COMMIT_GRAPH_PROGRESS : 0,
 				     NULL);
 >>>>>>> aaf633c2ad
-\end{lstlisting}\footnote{This and all of the following code snippets {\it in this chapter} will have
-the code shifted {\it a tab} to the left due to spacing issues but when you are working you should
-keep the original tabs as seen in the original code).}
+\end{lstlisting}\footnote{Todos los {\it snippets} de este capítulo estarán desplazados un {\it tabulador} hacia
+la izquierda por cuestiones de espacio pero si trabajan sobre las revisiones reales del repositorio, verán el código
+en su formato original}
 
-Following the same technique we have used so far, start working from {\bf UB} (with markers, for clarity):
+Siguiendo la misma técnica que hemos venido utilizando, comencemos a trabajar desde el {\bf UB} (con los
+marcadores, por claridad):
 
 \begin{lstlisting}[style=c_style,
 	basicstyle=\tiny,
 	firstnumber=686,
-	caption={\bf example 5} - {\bf UB} in {\bf CB}]
+	caption={\bf Ejemplo 5} - {\bf UB} en {\bf CB}]
 <<<<<<< HEAD
 if (gc_write_commit_graph &&
     write_commit_graph_reachable(get_object_directory(),
@@ -51,12 +52,12 @@ if (gc_write_commit_graph &&
 ||||||| 9c9b961d7e
 \end{lstlisting}
 
-Let's get the {\bf dML}:
+Veamos el {\bf dML}:
 
 \begin{lstlisting}[style=c_style,
 	basicstyle=\tiny,
 	firstnumber=692,
-	caption={\bf example 5} - {\bf MB} and {\bf LB} in {\bf CB}]
+	caption={\bf Ejemplo 5} - {\bf MB} y {\bf LB} en {\bf CB}]
 ||||||| 9c9b961d7e
 if (gc_write_commit_graph &&
     write_commit_graph_reachable(get_object_directory(),
@@ -72,18 +73,18 @@ if (the_repository->settings.gc_write_commit_graph == 1)
 >>>>>>> aaf633c2ad
 \end{lstlisting}
 
-{\bf dML}: A call to {\bf prepare\_repo\_settings()} was prepended (line 699), the conditional statement was modified
-so that the {\it standalone} variable {\bf gc\_write\_commit\_graph} from line 694 is now part of a {\bf struct * } on
-line 700. The call to {\bf write\_commit\_graph\_reachable()} originally used as part of the conditional statement (line 694) is
-now part of the {\bf if-true} section of the conditional (line 701) so adjusted formatting and finally removed the {\bf return}
-statement (present on line 697).
+{\bf dML}: Una llamada a {\bf prepare\_repo\_settings()} fue agregada (línea 699), el condicional fue modificado tal que modified
+so that la variable {\it standalone} {\bf gc\_write\_commit\_graph} de la línea 694 ahora es parte de un {\bf struct * } en
+la línea 700. La llamada a {\bf write\_commit\_graph\_reachable()} originalmente usada como parte del condidional (línea 694)
+ahora es parte de la sección{\bf if-true} del condicional (línea 701) así que se ajustó el formato y finalmente el {\bf return}
+fue removido (originalmente en la línea 697).
 
-Let's replicate all those changes on {\bf UB}.
+Repliquemos todos esos cambios en el {\bf UB}.
 
 \begin{lstlisting}[style=c_style,
 	basicstyle=\tiny,
 	firstnumber=686,
-	caption={\bf example 5} - Step 1 - Prepend call]
+	caption={\bf example 5} - Paso 1 - insertar llamada]
 <<<<<<< HEAD
 prepare_repo_settings(the_repository);
 if (gc_write_commit_graph &&
@@ -97,7 +98,7 @@ if (gc_write_commit_graph &&
 \begin{lstlisting}[style=c_style,
 	basicstyle=\tiny,
 	firstnumber=686,
-	caption={\bf example 5} - Step 2 - adjust conditional]
+	caption={\bf Ejemplo 5} - Paso 2 - ajustar condicional]
 <<<<<<< HEAD
 prepare_repo_settings(the_repository);
 if (the_repository->settings.gc_write_commit_graph == 1)
@@ -111,7 +112,7 @@ if (the_repository->settings.gc_write_commit_graph == 1)
 \begin{lstlisting}[style=c_style,
 	basicstyle=\tiny,
 	firstnumber=686,
-	caption={\bf example 5} - Step 3 - adjust formatting]
+	caption={\bf Ejemplo 5} - Paso 3 - ajustar formato]
 <<<<<<< HEAD
 prepare_repo_settings(the_repository);
 if (the_repository->settings.gc_write_commit_graph == 1)
@@ -125,7 +126,7 @@ if (the_repository->settings.gc_write_commit_graph == 1)
 \begin{lstlisting}[style=c_style,
 	basicstyle=\tiny,
 	firstnumber=686,
-	caption={\bf example 5} - Step 4 - Remove return]
+	caption={\bf Ejemplo 5} - Paso 4 - Remover {\bf return}]
 <<<<<<< HEAD
 prepare_repo_settings(the_repository);
 if (the_repository->settings.gc_write_commit_graph == 1)
@@ -139,7 +140,7 @@ Final result:
 \begin{lstlisting}[style=c_style,
 	basicstyle=\tiny,
 	firstnumber=681,
-	caption={\bf example 5} - final result]
+	caption={\bf Ejemplo 5} - resultado final]
 if (pack_garbage.nr > 0) {
 	close_object_store(the_repository->objects);
 	clean_pack_garbage();
@@ -154,17 +155,17 @@ if (the_repository->settings.gc_write_commit_graph == 1)
 if (auto_gc && too_many_loose_objects())
 \end{lstlisting}
 
-All in all, 4 modifications had to be carried out on the {\bf UB} to solve the conflict. Now, we are {\bf not}
-forced to work from {\bf UB}. We can choose to work from {\bf LB} instead.
+En total, se hicieron 5 modificaciones sobre el {\bf UB} para resolver el conflicto. Ahora bien, no hay ninguna obligación 
+de trabajar desde el {\bf UB}. Podemos trabajar desde el {\bf LB}
 
-\subsection{Example 5... from LB}
+\subsection{EJemplo 5... desde el LB}
 
-Let's start over:
+Comencemos de nuevo:
 
 \begin{lstlisting}[style=c_style,
 	basicstyle=\tiny,
 	firstnumber=698,
-	caption={\bf example 5} - {\bf LB} in {\bf CB}]
+	caption={\bf EJemplo 5} - {\bf LB} en {\bf CB}]
 =======
 prepare_repo_settings(the_repository);
 if (the_repository->settings.gc_write_commit_graph == 1)
@@ -174,12 +175,12 @@ if (the_repository->settings.gc_write_commit_graph == 1)
 >>>>>>> aaf633c2ad
 \end{lstlisting}
 
-Let's do the {\bf dMU} analysis this time:
+Hagamos el análisis del {\bf dMU} en esta oportunidad:
 
 \begin{lstlisting}[style=c_style,
 	basicstyle=\tiny,
 	firstnumber=686,
-	caption={\bf example 5} - {\bf UB} and {\bf MB} in {\bf CB}]
+	caption={\bf Ejemplo 5} - {\bf UB} y {\bf MB} en {\bf CB}]
 <<<<<<< HEAD
 if (gc_write_commit_graph &&
     write_commit_graph_reachable(get_object_directory(),
@@ -195,16 +196,16 @@ if (gc_write_commit_graph &&
 =======
 \end{lstlisting}
 
-{\bf dMU}: The original {\bf COMMIT\_GRAPH\_PROGRESS} on line 695 is now {\bf COMMIT\_GRAPH\_WRITE\_PROGRESS} on line 689.
-\footnote{Remember this is {\bf dMU} so we analyze from the {\bf MB} to the {\bf UB}, so the analysis has to be done
-going {\bf up}!}
+{\bf dMU}: El {\bf COMMIT\_GRAPH\_PROGRESS} original en la línea 695 ahora es {\bf COMMIT\_GRAPH\_WRITE\_PROGRESS} en la línea 689.
+\footnote{Recuerden que esto es {\bf dMU} así que el analisis se hace {\it desde} el {\bf MB} {\it hacia} el {\bf UB}, así que el
+análisis se hace {\bf subiendo}!}
 
-Let's replicate this change on {\bf LB}:
+Repliquemos los cambios en el {\bf LB}:
 
 \begin{lstlisting}[style=c_style,
 	basicstyle=\tiny,
 	firstnumber=698,
-	caption={\bf example 5} - Step 1]
+	caption={\bf Ejemplo 5} - Paso 1]
 =======
 prepare_repo_settings(the_repository);
 if (the_repository->settings.gc_write_commit_graph == 1)
@@ -214,11 +215,11 @@ if (the_repository->settings.gc_write_commit_graph == 1)
 >>>>>>> aaf633c2ad
 \end{lstlisting}
 
-And we are done! Final result:
+Y eso es todo! Resultado final:
 \begin{lstlisting}[style=c_style,
 	basicstyle=\tiny,
 	firstnumber=681,
-	caption={\bf example 5} - final result]
+	caption={\bf Ejemplo 5} - Resultado final]
 if (pack_garbage.nr > 0) {
 	close_object_store(the_repository->objects);
 	clean_pack_garbage();
@@ -233,7 +234,7 @@ if (the_repository->settings.gc_write_commit_graph == 1)
 if (auto_gc && too_many_loose_objects())
 \end{lstlisting}
 
-Which is exactly like the previous conflict resolution we tried. The only thing is that we had to work {\bf less} because
-we started from the block of code that was more different from {\bf MB}. Less changes to detect and bring
-over... and therefore less opportunities to mess up.
+Que es exactamente como la resolución que intentamos previamente. La única diferencia es que tuvimos que trabajar {\bf menos}
+porque comenzamos desde el bloque que era más diferente con respecto al {\bf MB}. Menos cambios que detectar y ejecutar... y
+por ende menos oportunidades de cometer un error.
 
