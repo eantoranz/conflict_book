@@ -3,11 +3,37 @@
 
 \section{Introducción}
 
-Los desarolladores gastan tanto tiempo escribiendo código. Agregando, modificando y borrando código... moviéndolo,
-reformateándolo, reformándolo, mejorándolo\footnote{... la mayoría de las veces}. Dado que nos hemos movido a
-{\bf Sistemas de Control de Versiones Distribuidos} (o {\it DVCS} por sus siglas en inglés), especialmente git,
-estamos ejecutando operaciones que pueden generar conflictos con mucha más frecuencia así que, de hecho, la mayoría
-de los desarrolladores gastamos algo de nuestro tiempo resolviendo conflictos, a veces dolorosamente, cada tanto.
+Estás orgulloso de ser un desarrolador. Inviertes mucho tiempo trabajando en cada feature. Escribes
+pruebas unitarias preciosas para cada una de las condiciones de los requerimientos (antes de escribir
+la primera línea de código que {\bf no es de tests}, cierto? Que viva el TDD!)... y ves las pruebas fallar....
+apenas puedes aguantar las ganas de corregirlas. Te sientas a escribir el código del requermiento (ahora sí)
+y ves como las pruebas otra vez están pasando sin problemas. Empujas los cambios y creas un PR.... una secuencia
+de cambios que se explican solos... lo más próximo que el código pueda estar de ser comparado con poesía. El PR
+es mezclado en la rama principal y la vida es bella. Felicitaciones de todos los conocidos. Vuelves a seguir
+programando otro requerimiento... luego de tomarte una deliciosa taza de café recien colado, por supuesto.
+
+Pasan 3 semanas. Te halan a una reunión.... necesito especificar que {\bf sin aviso}? O sea, de qué otra forma te podrían
+meter en una reunión con todos los pesos pesados del equipo de desarrollo y del equipo de soporte de producción?
+Luego de algunos minutos de tratar de obtener algún contexto, finalmente te das cuenta de que todas esas voces estresadas
+están refiriénsode al bello... {\it poema} que escribiste antes. Está roto.... EN PRODUCCIÓN. SE NECESITA UN ARREGLO...
+{\bf YA!!!}
+
+Luego de lograr que tu pulso vuelva parcialmente a la normalidad, te sientas a analizar el código de lo que está en
+producción y, pero qué??? El código de tu PR no está completo!!! Le falta una parte.... en realidad, le falta {\bf bastante}.
+Pero cómo??? Luego de analizar un poco más te das cuenta de que hubo un {\bf merge} cuando se iba a cortar la rama
+de producción y el código del PR fue.... bueno, {\bf destruido} mientras se resolvía un conflicto. Así que estás
+en la línea de fuego... y ni si quiera es tu culpa.
+
+Esta es una situación bastante extrema que podría surgir de un conflicto no resuelto de la forma correcta pero es más que
+probable que hayas estado involucrado en una situación así.... o que conozcas alguien al que le haya pasado (mientras más
+grande el proyecto, es más probable que se de esta situación).
+
+Resolver conflictos es una {\bf materia engañosa}. Los desarolladores gastan tanto tiempo escribiendo código.
+Agregando, modificando y borrando código... moviéndolo, reformateándolo, reformándolo, mejorándolo
+\footnote{... la mayoría de las veces}. Dado que nos hemos movido a {\bf Sistemas de Control de Versiones Distribuidos}
+(o {\it DVCS} por sus siglas en inglés), especialmente git, estamos ejecutando operaciones que pueden generar conflictos
+con mucha más frecuencia así que, de hecho, la mayoría de los desarrolladores gastamos algo de nuestro tiempo resolviendo
+conflictos, a veces dolorosamente, cada tanto.
 
 Lo que normalmente sucede es que un proyecto es desarrollado por múltiples desarrolladores {\it de forma independiente}
 y luego todo este trabajo separado se tiene que juntar. Cuando git trata de mezclar el desarrollo que se hizo en dos direcciones
