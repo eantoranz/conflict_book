@@ -3,10 +3,34 @@
 
 \section{Introduction}
 
-Developers spend so much time writing code. Actually adding, modifying and deleting code.... moving it around, reformatting it,
-refactoring, improving.... etc. As we have moved to {\bf Distributed Version Control Systems} (or {\it DVCS}, for short), git
-specially, we are running way more often operations that make conflicts show up so, in fact, most of us developers spend some
-time dealing with conflicts, even if painfully, every once in a while.
+You are proud to be a developer. You spend so much time working on a feature. You write beautiful unit tests
+fot each and every one of the possible conditions of the requirement (before writing a single
+line of {\bf non-test} code, right? Long live TDD)... and you see so many of those tests fail.... can hardly wait to
+write the code that will actually take care of them! Then you sit down to write the actual code for the requirement...
+and all tests are back to green! You push and create a beautiful PR... a sequence of self-explaining changes...
+the closest thing code can make it to poetry. The PR gets merged into the main branch and it's all beautiful. Kudos
+from everyone. You go back to coding another thing... after sipping a nice cup of freshly brewed coffee, of course.
+
+3 weeks go by. You are pulled into a meeting... do I need to specify that it was {\it without notice}? I mean,
+in what other fashion would you be pulled into a meeting with all the top brass of the development team and production
+support? After a few minutes of trying to get some context, you finally get to realize that the conversation
+of all those {\it stressed-out} voices is spinning around the beautiful piece of {\it poetry} that you had written
+before... it is actually broken... IN PRODUCTION. A FIX IS NEEDED .... {\bf NOW}!!!
+
+So... after getting your pulse kind of half-way back to normal, you sit down to see the code of what is in production....
+and, wait a second.... your PR is not complete!!!! One piece of it was left out... actually, {\it a lot} of it was left
+out. But how??? After some digging, you realize that there was a merge when the production branch was going to be cut
+and the code of your PR was... well, {\bf botched} while solving a conflict. So you are {\bf on the line} and it's not
+even your fault.
+
+This is a very extreme situation that could come up from a botched conflict but it's more than likely that you have
+been involved in something like this... or you someone who has (the bigger the project, the more likely the chances).
+
+Dealing with conflicts is {\bf a tricky subject}. Developers spend so much time writing code. Actually adding,
+modifying and deleting code.... moving it around, reformatting it, refactoring, improving.... etc. As we have moved
+to {\bf Distributed Version Control Systems} (or {\it DVCS}, for short), git specifically, we are running way more often
+operations that make conflicts show up so, in fact, most of us developers spend some time dealing with conflicts, even
+if painfully, every once in a while.
 
 What normally happens is that a project is developed by multiple developers {\it independently} and then all this separate work
 has to be put together. When git tries to merge the work that was developed in two separate directions it tries its best to figure
