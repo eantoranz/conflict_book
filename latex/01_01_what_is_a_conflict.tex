@@ -70,6 +70,7 @@ def getPhrase(color):
 
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
+{\bf Developer B} added color green on line 6.
 
 Se puede que se agregó el color verde en a línea 6.
 
@@ -247,7 +248,16 @@ es el tipo de conflicto donde las dos ramas modificaron un archivo en direccione
 {\bf conflictos de árbol}, de los que hablaremos más adelante}
 
 El archivo resultante se vería así:
+\footnote{No comiencen a quejarse porque no estoy usando \hyperref[diff3]{diff3}. Tengan calma, eso viene {\bf muy pronto}}
 \begin{lstlisting}[style=python_style, caption={\bf Ejemplo 1} - archivo en conflicto]
+||||||| 30e1283
+The resulting file would look something like this:
+\begin{lstlisting}[style=python_style, caption={\bf example 1} - conflicting file]
+=======
+The resulting file would look something like this:
+\footnote{Do not start complaining because we are not using \hyperref[diff3]{diff3}. Take it easy, it is coming {\bf very} soon.}
+\begin{lstlisting}[style=python_style, caption={\bf example 1} - conflicting file]
+>>>>>>> main
 #!/usr/bin/python
 
 import sys

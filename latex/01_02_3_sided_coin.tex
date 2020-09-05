@@ -209,7 +209,7 @@ Qué sucede si el archivo fue renombrado? Podemos averiguar el nombre original f
 Antes de que quemen (o borren) el archivo en medio de la frustración, déjenme mostrarles un pequeño {\it truco} que git tiene debajo de la
 manga. Git les puede mostrar el contenido del {\bf ancestro común} sin trabajo adicional de su parte. Al configurar.{\bf merge.conflictStyle}
 para que tenga el valor {\bf diff3} \footnote{ Ejecuten {\bf git config merge.conflictStyle diff3}. Usen {\bf --global} si
-quieren que aplique de forma global y no por-repo}, git les mostrará el código del ancestro común como una sección
+quieren que aplique de forma global y no por-repo}, git les mostrará el código de {\bf el ancestro común} como una sección
 más del conflicto. Déjenme mostrarles como se vería el conflicto que acabamos de analizar con esta opción:
 
 \subsubsection{Example 3 - Solving the conflict for real with {\bf diff3}}
@@ -234,7 +234,8 @@ más del conflicto. Déjenme mostrarles como se vería el conflicto que acabamos
 \end{lstlisting}
 
 {\bf Ajá!} Ahora podemos ver {\bf el ancestro común} entre las secciones de cada rama. git también tiene la amabilidad de
-indicarnos cual es la revisión del ancestro común. Y ahora podemos ver qué hizo cada rama.
+indicarnos cual es la revisión del ancestro común\footnote{Y coincide con la revisión que habíamos visto antes!}. Y ahora podemos ver
+qué hizo cada rama.
 
 Para resolver nuestro conflicto, comiencen a trabajar en la sección de {\bf HEAD}:
 \begin{lstlisting}[style=c_style, firstnumber=673, caption={\bf Ejemplo 3} - paso 1]
@@ -259,8 +260,8 @@ Consideren como cambió el código {\bf desde el ancestro común hacia la otra r
 >>>>>>> 20a5fd881a
 \end{lstlisting}
 
-La llamada a {\bf ewah\_iterator\_init()} se reemplazó por una llamada a {\bf init\_type\_iterator()}. Replicamos
-este cambio en {\bf HEAD}:
+La llamada a {\bf ewah\_iterator\_init()} en la línea 679 se reemplazó por una llamada a {\bf init\_type\_iterator()} en la línea
+684. Replicamos este cambio en {\bf HEAD}:
 
 \begin{lstlisting}[style=c_style, firstnumber=673, caption={\bf Ejemplo 3} - Paso 3]
 <<<<<<< HEAD

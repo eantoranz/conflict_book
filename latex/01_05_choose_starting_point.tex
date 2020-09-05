@@ -155,17 +155,17 @@ if (the_repository->settings.gc_write_commit_graph == 1)
 if (auto_gc && too_many_loose_objects())
 \end{lstlisting}
 
+\subsection{Ejemplo 5... desde el LB}
+
 En total, se hicieron 5 modificaciones sobre el {\bf UB} para resolver el conflicto. Ahora bien, no hay ninguna obligación 
 de trabajar desde el {\bf UB}. Podemos trabajar desde el {\bf LB}
-
-\subsection{EJemplo 5... desde el LB}
 
 Comencemos de nuevo:
 
 \begin{lstlisting}[style=c_style,
 	basicstyle=\tiny,
 	firstnumber=698,
-	caption={\bf EJemplo 5} - {\bf LB} en {\bf CB}]
+	caption={\bf Ejemplo 5} - {\bf LB} en {\bf CB}]
 =======
 prepare_repo_settings(the_repository);
 if (the_repository->settings.gc_write_commit_graph == 1)
