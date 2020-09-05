@@ -2,6 +2,7 @@
 % Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
 
 \section{Conflicts are a 3-sided coin}
+\label{diff3}
 
 Let's work on our first example from a real project. In this case, \hyperref[git_repo]{git itself}.
 
@@ -201,11 +202,12 @@ is {\it a lot of work} if we need to go check what {\bf the common ancestor} cod
 
 What if the file had been renamed? Can we figure out what the original name was easily?
 
-Before you burn the book in frustration, let me show you a little git {\it trick}. git can actually do the work of showing you what
-{\bf the common ancestor} looks like {\it without } additional work on your part. By setting {\bf merge.conflictStyle} to
-{\bf diff3} \footnote{ Run {\bf git config merge.conflictStyle diff3}. Use {\bf --global} if you want it to apply globally on
-your user's config, not on a per-repo basis}, git will kindly add what the common ancestor looked on the section of code that is
-related to the conflict. Let me show you the current conflict after applying this option for your own amusement:
+Before you burn the book in frustration\footnote{These days it's about deleting, I know}, let me show you a little git
+{\it trick}. git can actually do the work of showing you what {\bf the common ancestor} looks like {\it without } additional
+work on your part. By setting {\bf merge.conflictStyle} to {\bf diff3} \footnote{ Run {\bf git config merge.conflictStyle diff3}.
+Use {\bf --global} if you want it to apply globally on your user's config, not on a per-repo basis}, git will kindly add what
+{\bf the common ancestor} looked on the section of code that is related to the conflict. Let me show you the current conflict
+after applying this option for your own amusement:
 
 \subsubsection{Example 3 - Solving the conflict for real with {\bf diff3}}
 \begin{lstlisting}[style=c_style, firstnumber=671, caption={\bf example 3} - conflict with {\bf diff3} applied]
@@ -229,7 +231,8 @@ related to the conflict. Let me show you the current conflict after applying thi
 \end{lstlisting}
 
 {\bf Wow!} We get to see {\bf the common ancestor} code between the sections of each branch. git is also kind enough to tell us
-{\bf the common ancestor} revision. Now we can see what each one of the branches did.
+{\bf the common ancestor} revision\footnote{And it matches the revision id we had found before!}. Now we can see what each one
+of the branches did.
 
 In order to solve our conflict, first, start working from {\bf HEAD}:
 \begin{lstlisting}[style=c_style, firstnumber=673, caption={\bf example 3} - step 1]
@@ -254,8 +257,8 @@ Then consider how {\bf the other branch} changed {\it from} {\bf the common ance
 >>>>>>> 20a5fd881a
 \end{lstlisting}
 
-The call to {\bf ewah\_iterator\_init()} was removed and a call to {\bf init\_type\_iterator()} was
-added. So we replicate that on {\bf HEAD}:
+The call to {\bf ewah\_iterator\_init()} on line 679 was removed and a call to {\bf init\_type\_iterator()} was added on line 684.
+So we replicate that on {\bf HEAD}:
 
 \begin{lstlisting}[style=c_style, firstnumber=673, caption={\bf example 3} - step 3]
 <<<<<<< HEAD

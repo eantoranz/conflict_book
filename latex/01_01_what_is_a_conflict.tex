@@ -69,6 +69,7 @@ def getPhrase(color):
 
 print(getPhrase(sys.argv[1]))
 \end{lstlisting}
+{\bf Developer B} added color green on line 6.
 
 History of the branches looks like this:
 \begin{lstlisting}[style=branch_history_style, caption={\bf Example 0} - branch history]
@@ -243,6 +244,7 @@ where both branches modified a file in different {\it conflicting} directions an
 we will talk about later}
 
 The resulting file would look something like this:
+\footnote{Do not start complaining because we are not using \hyperref[diff3]{diff3}. Take it easy, it is coming {\bf very} soon.}
 \begin{lstlisting}[style=python_style, caption={\bf example 1} - conflicting file]
 #!/usr/bin/python
 
