@@ -15,18 +15,19 @@ programando otro requerimiento... luego de tomarte una deliciosa taza de café r
 Pasan 3 semanas. Te halan a una reunión telefónica.... necesito especificar que {\bf sin aviso}? O sea, de qué otra forma
 te podrían meter en una reunión con todos los pesos pesados del equipo de desarrollo y del equipo de soporte de producción?
 Luego de algunos minutos de tratar de obtener algún contexto, finalmente te das cuenta de que todas esas voces estresadas
- repartidas por 6 zonas horarias en 3 continentes están refiriénsode al bello... {\it poema} que escribiste antes.
- Está roto.... EN PRODUCCIÓN. SE NECESITA UN ARREGLO... {\bf YA!!!}
+repartidas por 6 zonas horarias en 3 continentes están refiriénsode al bello... {\it poema} que escribiste antes.
+Está roto.... EN PRODUCCIÓN. SE NECESITA UN ARREGLO... {\bf YA!!!}
 
 Luego de lograr que tu pulso vuelva parcialmente a la normalidad, te sientas a analizar el código de lo que está en
 producción y, pero qué??? El código de tu PR no está completo!!! Le falta una parte.... en realidad, le falta {\bf bastante}.
 Pero cómo??? Luego de analizar un poco más te das cuenta de que hubo un {\bf merge} cuando se iba a cortar la rama
 de producción y el código del PR fue.... bueno, {\bf destruido} mientras se resolvía conflictos. Así que estás
 en la línea de fuego... y ni si quiera es tu culpa. Ah, y antes de que lo olvide... recuerdas esas {\it bellísimas}
-pruebas que te tomó tanto tiempo escribir? Bueno, la mitad de ellas fueron {\bf borradas} porque estaban fallando luego
+pruebas que serían la envidia de \href{https://es.wikipedia.org/wiki/Jorge_Luis_Borges}{Jorge Luis Borges} que te tomó tanto
+tiempo escribir? Bueno, la mitad de ellas fueron {\bf borradas} porque estaban fallando luego
 de la carnicería de los conflictos y quien quiere ver pruebas fallidas cuando se quiere lanzar a producción?
 
-Resolver conflictos es una {\bf materia engañosa}. Los desarolladores gastan tanto tiempo escribiendo código.
+Resolver conflictos es una {\bf materia engañosa}. Los desarrolladores gastan tanto tiempo escribiendo código.
 Agregando, modificando y borrando código... moviéndolo, reformateándolo, reformándolo, {\it mejorándolo}
 \footnote{... la mayoría de las veces}. Dado que nos hemos movido a {\bf Sistemas de Control de Versiones Distribuidos}
 (o {\it DVCS} por sus siglas en inglés), especialmente git, estamos ejecutando operaciones que pueden generar conflictos
