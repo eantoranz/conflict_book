@@ -1,0 +1,496 @@
+% copyright 2020 Edmundo Carmona Antoranz
+% Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
+
+\section{Deleted code can be a challenge}
+\label{deleted_code}
+
+When you find cases where code has been deleted, it might be tempting to assume that the code was deleted and there's nothing
+else to think about. Unfortunately, that is not always the case. On many occasions the code was not actually deleted but
+it was {\it moved} instead.
+
+\subsection{Example 6}
+\label{example_06}
+
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	caption={\bf example 6}]
+#!/usr/bin/python
+
+import sys
+
+colors = {"black": "black mirror",
+          "white": "white noise",
+          "blue": "blue sky"}
+
+def getPhrase(origColor):
+    color = origColor.lower()
+    if color not in colors:
+        sys.stderr.write("There is no phrase defined for color %s\n" % origColor)
+        sys.exit(1)
+    phrase = colors[color]
+<<<<<<< HEAD
+||||||| 3c7f401
+    phrase = "%s: %s" % (origColor, phrase)
+=======
+    phrase = "Color: %s\nPhrase: %s" % (origColor, phrase)
+>>>>>>> example7/branchB
+    return phrase
+
+print(getPhrase(sys.argv[1]))
+\end{lstlisting}
+
+\subsubsection{dMU}
+The line where the phrase is modified to include the original color in the output (line 17 originally) was removed.
+
+\subsubsection{dML}
+Formatting for the phrase was modified (from line 17 to line 19). Under normal conditions, the way a line has been modified on one
+branch does not matter {\it if} on the other branch the line has been deleted.
+
+\subsubsection{Resolution}
+If the {\it intent} of one branch was to delete it, then there is {\bf probably} no point in a modification made on it, right? So:
+
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	caption={\bf example 6} - resolution]
+#!/usr/bin/python
+
+import sys
+
+colors = {"black": "black mirror",
+          "white": "white noise",
+          "blue": "blue sky"}
+
+def getPhrase(origColor):
+    color = origColor.lower()
+    if color not in colors:
+        sys.stderr.write("There is no phrase defined for color %s\n" % origColor)
+        sys.exit(1)
+    phrase = colors[color]
+    return phrase
+
+print(getPhrase(sys.argv[1]))
+\end{lstlisting}
+
+In this case it's a clear shot but more often than not analysis actually requires more brain power to get a correct {\it informed}
+resolution. Take this sample:
+
+\subsection{Example 7}
+\label{example_07}
+
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	caption={\bf example 7}]
+#!/usr/bin/python
+
+import sys
+
+colors = {"black": "black mirror",
+          "white": "white noise",
+          "blue": "blue sky"}
+
+def getPhrase(color):
+<<<<<<< HEAD
+||||||| f75877d
+    if color not in colors:
+        sys.stderr.write("Got no phrase for color %s\n" % color)
+        sys.exit(1)
+=======
+    if color not in colors:
+        sys.stderr.write("Phrase for color %s is not defined\n" % color)
+        sys.exit(1)
+>>>>>>> example8/branchB
+    phrase = getFormattedPhrase(color)
+    return phrase
+
+def getFormattedPhrase(aColor):
+    return "%s: %s" % (aColor, colors[aColor])
+
+print(getPhrase(sys.argv[1]))
+\end{lstlisting}
+
+\subsubsection{dMU}
+The conditional to check if the color is defined (defined in lines 12-14) was removed.
+
+\subsubsection{dML}
+The error message when the color is not defined was modified (from line 13 to line 17).
+
+\subsubsection{Resolution}
+Just like we did in our previous example, we get rid of the conflicting lines:
+
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	caption={\bf example 7} - resolution]
+#!/usr/bin/python
+
+import sys
+
+colors = {"black": "black mirror",
+          "white":  "white noise",
+          "blue": "blue sky"}
+
+def getPhrase(color):
+    phrase = getFormattedPhrase(color)
+    return phrase
+
+def getFormattedPhrase(aColor):
+    return "%s: %s" % (aColor, colors[aColor])
+
+print(getPhrase(sys.argv[1]))
+\end{lstlisting}
+We are doing {\bf great!} But there was not much brain power we needed to spend, right? Where's the trick? Take this next example:
+
+\subsection{Example 8}
+\label{example_08}
+
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	caption={\bf example 8}]
+#!/usr/bin/python
+
+import sys
+
+colors = {"black": "black mirror",
+          "white": "white noise",
+          "blue": "blue sky"}
+
+def getPhrase(color):
+<<<<<<< HEAD
+||||||| 305fd0a
+    if color not in colors:
+        sys.stderr.write("Got no phrase for color %s\n" % color)
+        sys.exit(1)
+=======
+    if color not in colors:
+        sys.stderr.write("Phrase for color %s is not defined\n" % color)
+        sys.exit(1)
+>>>>>>> example9/branchB
+    phrase = getFormattedPhrase(color)
+    return phrase
+
+def getFormattedPhrase(aColor):
+    if aColor not in colors:
+        sys.stderr.write("Got no phrase for color %s\n" % aColor)
+        sys.exit(1)
+    return "%s: %s" % (aColor, colors[aColor])
+
+print(getPhrase(sys.argv[1]))
+\end{lstlisting}
+
+This looks very much like \hyperref[example_07]{example 7}.
+
+\subsubsection{dMU}
+The check for the color to be defined was removed.
+
+\subsubsection{dML}
+The error message when color is not defined was modified we modified.
+
+\subsubsection{Resolution}
+We should get rid of the code then, shouldn't we? Just like we did in \hyperref{example_07}{example 7}. Well...
+{\bf not exactly}. If you look at the definition of {\bf getFormattedPhrase()}, on lines 23-27 you have the exact same error
+message that was on {\bf MB}.... except for the name of the variable for color. Look at {\bf MB}:
+
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	firstnumber=11,
+	caption={\bf example 8} - {\bf MB}]
+||||||| 305fd0a
+    if color not in colors:
+        sys.stderr.write("Got no phrase for color %s\n" % color)
+        sys.exit(1)
+=======
+\end{lstlisting}
+
+Look at current definition of {\bf getFormattedPhrase()}, outside of the {\bf CB}:
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	firstnumber=23,
+	caption={\bf example 8} - {\bf getFormattedPhrase()}]
+def getFormattedPhrase(aColor):
+    if aColor not in colors:
+        sys.stderr.write("Got no phrase for color %s\n" % aColor)
+        sys.exit(1)
+    return "%s: %s" % (aColor, colors[aColor])
+\end{lstlisting}
+
+And this {\it hints} us that the {\bf if} block is not really {\bf gone}. Actually it was {\bf moved} as part of a {\bf refactoring}
+effort \footnote{{\bf Refactoring} deserves to be treated separately so I will be talking about it later}. In this case what we need
+to do is adjust the wording of the code in {\bf getFormattedPhrase()} as it was modified in {\bf dML}. So the correct conflict resolution
+should look like this:
+
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	caption={\bf example 8} - resolution]
+#!/usr/bin/python
+
+import sys
+
+colors = {"black": "black mirror",
+          "white": "white noise",
+          "blue": "blue sky"}
+
+def getPhrase(color):
+    phrase = getFormattedPhrase(color)
+    return phrase
+
+def getFormattedPhrase(aColor):
+    if aColor not in colors:
+        sys.stderr.write("Phrase for color %s is not defined\n" % aColor)
+        sys.exit(1)
+    return "%s: %s" % (aColor, colors[aColor])
+
+print(getPhrase(sys.argv[1]))
+\end{lstlisting}
+{\bf Careful with the name of the variable!!!}
+
+Don't think that a conflict is restricted to the conflicting section of code. Other parts of the code might need adjustments.
+Nothing is off-limits to solve conflicts. Also consider that in this case it was a pretty small file where it is easy to spot
+what happened with the code. But consider what the situation would be like if the file were a few hundred lines long and you are
+not able to easily see that the lines were moved to a different place. Or, even more difficult, if the function were defined in
+{\it a separate module/file}. Then you might have a much harder time figuring out what happened and what to do..... just like:
+
+\subsection{Example 9}
+\label{example_09}
+
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	caption={\bf example 9}]
+#!/usr/bin/python
+
+from module import getFormattedPhrase
+import sys
+
+def getPhrase(color):
+<<<<<<< HEAD
+||||||| f78479a
+    if color not in colors:
+        sys.stderr.write("Got no phrase for color %s\n" % color)
+        sys.exit(1)
+=======
+    if color not in colors:
+        sys.stderr.write("Color %s has no phrase\n" % color)
+        sys.exit(1)
+>>>>>>> example10/branchB
+    phrase = getFormattedPhrase(color)
+    return phrase
+
+print(getPhrase(sys.argv[1]))
+\end{lstlisting}
+
+This looks like \hyperref[example_07]{example 7} where we only needed to delete the code and be happy with it.
+But if you looked inside {\bf module.py}, you would see the same block of code that we saw moving on
+\hyperref[example_08]{example 8}:
+
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	caption={\bf example 9} - {\bf module.py}]
+import sys
+
+colors = {"black": "black mirror",
+          "white": "white noise",
+          "blue": "blue sky"}
+
+def getFormattedPhrase(aColor):
+    if aColor not in colors:
+        sys.stderr.write("Got no phrase for color %s\n" % aColor)
+        sys.exit(1)
+    return "%s: %s" % (aColor, colors[aColor])
+\end{lstlisting}
+In this case resolving the conflict would require adjusting the error message in {\bf module.py} following the new
+phrasing of {\bf LB} from our {\bf CB} from {\bf example.py}, adjusting variable name, just like we did in
+\hyperref[example_08]{example 8}:
+
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	caption={\bf example 9} - {\bf module.py} final]
+import sys
+
+colors = {"black": "black mirror",
+          "white": "white noise",
+          "blue": "blue sky"}
+
+def getFormattedPhrase(aColor):
+    if aColor not in colors:
+        sys.stderr.write("Color %s has no phrase\n" % aColor)
+        sys.exit(1)
+    return "%s: %s" % (aColor, colors[aColor])
+\end{lstlisting}
+
+And removing the {\bf CB} from {\bf example.py}:
+
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	caption={\bf example 9} - {\bf example.py} final]
+#!/usr/bin/python
+
+from module import getFormattedPhrase
+import sys
+
+def getPhrase(color):
+    phrase = getFormattedPhrase(color)
+    return phrase
+
+print(getPhrase(sys.argv[1]))
+\end{lstlisting}
+
+% TODO add a comment that it is possible to do the analysis without guessing. It will be in recipes
+\subsection{How can we avoid... guessing?}
+
+First, do not assume that this is a 1-step process. Hunting down for {\it when} a deletion happened to make
+sure if code was moved or not normally involves pulling up your sleeves and getting dirty in history. So, without
+further ado, let's try with a real project:
+
+\subsection{Example 10 - a git example for deleted code}
+\label{example_10}
+
+From \href{git_repo}{git repo}, let's checkout revision {\bf 0da63da794} and merge revision {\bf f1928f04b2}
+\footnote{These are the parents of revision 56ceb64eb0}. There will be a {\bf CB} in {\bf builtin/grep.c}.
+
+\begin{lstlisting}[style=c_style,
+	firstnumber=1123,
+	caption={\bf example 10} - {\bf cb} in {\bf builtin/grep.c}]
+<<<<<<< HEAD
+	if (recurse_submodules && untracked)
+		die(_("--untracked not supported with --recurse-submodules"));
+
+||||||| d0654dc308
+	if (recurse_submodules && (!use_index || untracked))
+		die(_("option not supported with --recurse-submodules"));
+
+=======
+>>>>>>> f1928f04b2
+	if (!show_in_pager && !opt.status_only)
+		setup_pager();
+\end{lstlisting}
+
+And you can see that it involves {\bf deleted code}.
+
+\subsubsection{dMU}
+Modified the conditional and modified the wording of the message printed on {\bf die()} on line 1125.
+
+\subsubsection{dML}
+The whole block wad deleted.
+
+\subsubsection{Resolution}
+Should we remove the block {\it just like that}? Let's try to fund out {\bf when} the block was deleted on {\bf the other branch}.
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption={\bf example 10} - {\bf git blame --reverse}]
+$ git blame -s --reverse d0654dc308..f1928f04b2 -- builtin/grep.c
+.
+.
+.
+d7992421e1a 1118)       if (recurse_submodules && (!use_index || untracked))
+d7992421e1a 1119)               die(_("option not supported with --recurse-submodules"));
+d7992421e1a 1120) 
+f1928f04b25 1121)       if (!show_in_pager && !opt.status_only)
+f1928f04b25 1122)               setup_pager();
+\end{lstlisting}
+{\bf git blame --reverse} allows us to see when was the last revision when code was {\bf present} in the history. The two
+revisions that I used were the {\bf common ancestor} (provided in the {\bf CB}), where we know that the line was still
+{\it present},  and the revision we are trying to merge aka {\bf the other branch}.
+
+And we can see that the last revision when the two lines we are tracking were {\bf present} is in {\bf d7992421e1a},
+in the direction of {\bf the other branch}. Next step would see what revision followed it to know in what revision it
+was {\bf actually deleted}:
+
+\begin{lstlisting}[style=console_style,
+	caption={\bf example 10} - {\bf git log --oneline}]
+$ git log --graph --oneline d7992421e1a..f1928f04b2 -- builtin/grep.c
+* f1928f04b2 grep: use no. of cores as the default no. of threads
+* 70a9fef240 grep: move driver pre-load out of critical section
+* 1184a95ea2 grep: re-enable threads in non-worktree case
+* 6c307626f1 grep: protect packed_git [re-]initialization
+* c441ea4edc grep: allow submodule functions to run in parallel
+\end{lstlisting}
+
+And by checking this handful of revisions, we realize that the lines were {\bf moved}, not {\it really} deleted,
+in {\bf c441ea4edc}:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption={\bf example 10} - {\bf git show c441ea4edc}]
+$ git show c441ea4edc
+.
+.
+.
+diff --git a/builtin/grep.c b/builtin/grep.c
+index d3ed05c1da..ac3d86c2e5 100644
+--- a/builtin/grep.c
++++ b/builtin/grep.c
+.
+.
+.
+@@ -1052,6 +1050,9 @@ int cmd_grep(int argc, const char **argv, const char *prefix)
+        pathspec.recursive = 1;
+        pathspec.recurse_submodules = !!recurse_submodules;
+ 
++       if (recurse_submodules && (!use_index || untracked))
++               die(_("option not supported with --recurse-submodules"));
++
+        if (list.nr || cached || show_in_pager) {
+                if (num_threads > 1)
+                        warning(_("invalid option combination, ignoring --threads"));
+.
+.
+.
+@@ -1105,9 +1114,6 @@ int cmd_grep(int argc, const char **argv, const char *prefix)
+                }
+        }
+ 
+-       if (recurse_submodules && (!use_index || untracked))
+-               die(_("option not supported with --recurse-submodules"));
+-
+        if (!show_in_pager && !opt.status_only)
+                setup_pager();
+ 
+\end{lstlisting}
+
+Are the lines there on the conflicted file currently on the working tree? They are, though a little displaced:
+\begin{lstlisting}[style=c_style,
+	firstnumber=1054,
+	caption={\bf example 10} - another section of {\bf builtin/grep.c}]
+	pathspec.recurse_submodules = !!recurse_submodules;
+
+	if (recurse_submodules && (!use_index || untracked))
+		die(_("option not supported with --recurse-submodules"));
+
+	if (show_in_pager) {
+\end{lstlisting}
+
+Let's bring over the changes as they were introduced in {\bf UB} and we should be fine:
+\begin{lstlisting}[style=c_style,
+	firstnumber=1054,
+	caption={\bf example 10} - adjust section of {\bf builtin/grep.c}]
+	pathspec.recurse_submodules = !!recurse_submodules;
+
+	if (recurse_submodules && (!use_index || untracked))
+		die(_("--untracked not supported with --recurse-submodules"));
+
+	if (show_in_pager) {
+\end{lstlisting}
+
+Get rid of the {\bf CB} altogether:
+\begin{lstlisting}[style=c_style,
+	firstnumber=1120,
+	caption={\bf example 10} - remove {\bf CB} in {\bf builtin/grep.c}]
+		}
+	}
+
+	if (!show_in_pager && !opt.status_only)
+		setup_pager();
+\end{lstlisting}
+
+And if we compare with revision {\bf 56ceb64eb0}, there should be no differences.
+
+\subsection{Bottom line}
+Think of conflicts related to deleted code as an iceberg. You only get to see the tip of the conflict, but it can be an
+inverted mountain of ice beneath the surface bigger than Olympus.
+\footnote{... and I mean the one in \href{https://en.wikipedia.org/wiki/Olympus_Mons}{Mars}, not the one in
+\href{https://en.wikipedia.org/wiki/Mount_Olympus}{Greece}}
+
+\subsection{Exercises}
+\subsubsection{Exercise 6}
+From \hyperref[git_repo]{git repo}, checkout revision {\bf 0194c9ad72} and merge revision {\bf aa46a0da30}. Solution is
+\hyperref[exercise_06]{here}.
+
