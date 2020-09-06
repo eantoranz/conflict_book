@@ -1,0 +1,10 @@
+*
+
+!.gitignore
+!license.txt
+!readme.txt
+!latex
+!latex/*.tex
+!latex/*.sh
+!latex/images/*
+
