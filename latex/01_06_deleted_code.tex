@@ -465,7 +465,7 @@ Traigamos los cambios como fueron introducidos en el {\bf UB} y estaremos bien:
 	caption={\bf example 10} - adjust section of {\bf builtin/grep.c}]
 	pathspec.recurse_submodules = !!recurse_submodules;
 
-	if (recurse_submodules && (!use_index || untracked))
+	if (recurse_submodules && untracked)
 		die(_("--untracked not supported with --recurse-submodules"));
 
 	if (show_in_pager) {
