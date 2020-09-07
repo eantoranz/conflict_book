@@ -483,6 +483,100 @@ Get rid of the {\bf CB} altogether:
 
 And if we compare with revision {\bf 56ceb64eb0}, there should be no differences.
 
+\subsection{Do not be impressed by big conflicts}
+Deleted code can produce {\bf big} conflicts that are really not that big when you look more closely. When there's
+deleted code on one branch and as much as a single line of the code that got deleted is touched on another,
+git can't do much more than show you the original code and code as it ended up on the other branch if you are using {\bf diff3}, as
+you should always do. If the block was 5 lines in the beginning and 6 in the end, well, that's 11 lines plus markers... not too big.
+But if the original block was 300 lines and the final block is 300 with a single line modified, then we are talking about
+300 * 2 + markers. And all of that because of a single line that is modified. The examples we attempted so far related to deleted
+code haven't been that big... so let's try one with {\it a few} more lines.
+
+\subsection{Example 11}
+
+From \hyperref[git_repo]{git repo}, checkout revision {\bf d88949d86e} and merge {\bf d9f62dfa0d}\footnote{These are the parents
+of revision {\bf 769af0fd9e}}. Take a look at the {\bf CB} in {\bf ref-filter.c}. The {\bf CB} starts on line 1680, ends up on line
+1959 soI won't be copying the content into the book because of the sheer size. But let's not allow ourselved to be stopped from
+doing the analysis and resolution:
+
+\subsubsection{dMU}
+The whole section was deleted
+
+\subsubsection{dML}
+I'll give you 5 minutes to sort it out on your own, then I will tell you what the difference is. Stop reading,
+Take a look at the code and come back in 5 minutes! {\bf No cheating!}
+
+[5 minutes go by]
+
+So... did you get it? Switching {\bf !oidcpm()} for {\bf oideq()}, right? Was it tricky to catch? I bet it was.... but I
+can't really tell because I actually {\bf didn't} try to do it visually. I asked git to give me a little help to figue it out:
+
+\begin{lstlisting}[style=c_style,
+	firstnumber=1054,
+	caption={\bf example 11} - {\bf git diff}]
+$ git diff HEAD...MERGE_HEAD -- ref-filter.c
+diff --git a/ref-filter.c b/ref-filter.c
+index 0bccfceff2..ccca317ce1 100644
+--- a/ref-filter.c
++++ b/ref-filter.c
+@@ -1710,7 +1710,7 @@ struct contains_stack {
+ static int in_commit_list(const struct commit_list *want, struct commit *c)
+ {
+        for (; want; want = want->next)
+-               if (!oidcmp(&want->item->object.oid, &c->object.oid))
++               if (oideq(&want->item->object.oid, &c->object.oid))
+                        return 1;
+        return 0;
+ }
+\end{lstlisting}
+Git is an amazing analysis tool. Learn to squiz as much as you can from it.
+
+Coming back to our conflict... See? All of those 279 lines of an apparenty nastly conflict were produced by this tiny
+litle change (and the deletion in {\bf dMU}, of course). Now that we know what it was all about, can you solve this conflict
+on your own, right? Give it a try. Here is the full list of modifications for you to check when you finish:
+
+After finding out that the code we were talking about was moved to a separate file:
+\begin{lstlisting}[style=c_style,
+	firstnumber=426,
+	caption={\bf example 11} - {\bf commit-reach.c}]
+static int in_commit_list(const struct commit_list *want, struct commit *c)
+{
+	for (; want; want = want->next)
+		if (oideq(&want->item->object.oid, &c->object.oid))
+			return 1;
+	return 0;
+}
+\end{lstlisting}
+
+Removing the {\bf CB} from {\bf ref-filter.c}:
+\begin{lstlisting}[style=c_style,
+	firstnumber=1679,
+	caption={\bf example 11} - {\bf ref-filter.c}]
+/*
+ * Return 1 if the refname matches one of the patterns, otherwise 0.
+ * A pattern can be a literal prefix (e.g. a refname "refs/heads/master"
+ * matches a pattern "refs/heads/mas") or a wildcard (e.g. the same ref
+ * matches "refs/heads/mas*", too).
+ */
+static int match_pattern(const struct ref_filter *filter, const char *refname)
+{
+\end{lstlisting}
+
+And there's a conflict on this file also:
+\begin{lstlisting}[style=c_style,
+	firstnumber=1763,
+	caption={\bf example 11} - {\bf builtin/log.c}]
+	if (ignore_if_in_upstream) {
+		/* Don't say anything if head and upstream are the same. */
+		if (rev.pending.nr == 2) {
+			struct object_array_entry *o = rev.pending.objects;
+			if (oideq(&o[0].item->oid, &o[1].item->oid))
+				goto done;
+		}
+		get_patch_ids(&rev, &ids);
+	}
+\end{lstlisting}
+
 \subsection{Bottom line}
 Think of conflicts related to deleted code as an iceberg. You only get to see the tip of the conflict, but it can be an
 inverted mountain of ice beneath the surface bigger than Olympus.
@@ -493,4 +587,3 @@ inverted mountain of ice beneath the surface bigger than Olympus.
 \subsubsection{Exercise 6}
 From \hyperref[git_repo]{git repo}, checkout revision {\bf 0194c9ad72} and merge revision {\bf aa46a0da30}. Solution is
 \hyperref[exercise_06]{here}.
-
