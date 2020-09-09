@@ -222,6 +222,7 @@ And I'm sure it's extremely unlikey anyone else will keep this in mind. All in a
 You have been forewarned.
 
 \subsection{Example 13 - revert}
+\label{example_13}
 
 When you want to {\it take back} the changes introduced by a revision, the operation you have to apply is {\bf revert}
 \footnote{We are not talking about removing a revision from history, which involves {\it rewriting} history (as if the revision
@@ -233,7 +234,7 @@ From \hyperref[git_repo]{git repo}, checkout tag {\bf v2.26.2}. We will revert r
 revision that I want to revert {\it did} originally to {\bf builtin/rebase.c}:
 
 \begin{lstlisting}[style=console_style,
-	basicstyle=\small,
+	basicstyle=\tiny,
 	caption={\bf example 13} - Original revision]
 $ git show --pretty="" 22a69fda197f -- builtin/rebase.c
 diff --git a/builtin/rebase.c b/builtin/rebase.c
@@ -270,10 +271,11 @@ index 8081741f8a..faa4e0d406 100644
 
 The revision we want to {\bf revert} changed the original calls to {\bf OPT\_BOOL()} for defining {\bf allow-empty-message}
 to {\bf OPT\_BOOL\_F()} and adjusted the parameters. That means that if we want to {\bf revert} this revision, we need to end
-up with the original {\bf OPT\_BOOL()} calls in place after the revert is finished, right? Let's try:
+up with the original {\bf OPT\_BOOL()} call to define {\bf allow-empty-message} in place after the revert is finished, right?
+Let's try:
 
 \begin{lstlisting}[style=console_style,
-	basicstyle=\small,
+	basicstyle=\tiny,
 	caption={\bf example 13} - Reverting]
 $ git revert --no-commit 22a69fda197f
 Auto-merging builtin/rebase.c
@@ -301,7 +303,7 @@ Unmerged paths:
 
 There is a {\bf CB} in {\bf builtin/rebase.c}:
 \begin{lstlisting}[style=c_style,
-	basicstyle=\small,
+	basicstyle=\tiny,
 	firstnumber=473,
 	caption={\bf example 13} - {\bf CB} in {\bf builtin/rebase.c}]
 <<<<<<< HEAD
@@ -348,7 +350,7 @@ change that was done for {\bf allow-empty-message} in {\bf dML}. Then I will cha
 to {\bf OPT\_BOOL()} (lines 478-480):
 
 \begin{lstlisting}[style=c_style,
-	basicstyle=\small,
+	basicstyle=\tiny,
 	firstnumber=473,
 	caption={\bf example 13} - Step 1 {\bf UB} in {\bf builtin/rebase.c}]
 <<<<<<< HEAD
@@ -364,7 +366,7 @@ to {\bf OPT\_BOOL()} (lines 478-480):
 
 Remove {\bf PARSE\_OPT\_HIDDEN} as a parameter (present on line 480):
 \begin{lstlisting}[style=c_style,
-	basicstyle=\small,
+	basicstyle=\tiny,
 	firstnumber=473,
 	caption={\bf example 13} - Step 2 {\bf UB} in {\bf builtin/rebase.c}]
 <<<<<<< HEAD
@@ -380,7 +382,7 @@ Remove {\bf PARSE\_OPT\_HIDDEN} as a parameter (present on line 480):
 Reposition the second line for the argument on the second line of the macro call to align with
 the position of the call (line 479):
 \begin{lstlisting}[style=c_style,
-	basicstyle=\small,
+	basicstyle=\tiny,
 	firstnumber=473,
 	caption={\bf example 13} - Step 3 {\bf UB} in {\bf builtin/rebase.c}]
 <<<<<<< HEAD
@@ -396,7 +398,7 @@ the position of the call (line 479):
 And now we are done with the reversion:
 
 \begin{lstlisting}[style=c_style,
-	basicstyle=\small,
+	basicstyle=\tiny,
 	firstnumber=470,
 	caption={\bf example 13} - Solution of {\bf CB} in {\bf builtin/rebase.c}]
 	struct option options[] = {
@@ -418,12 +420,13 @@ Just so that you can see that the same rules apply when analyzing a reversion, t
 and bring over the changes introduced in {\bf dMU}. You should end up with the same code.
 
 \subsection{Example 14 - rebase}
+\label{example_14}
 
 Let's play a little bit. From \hyperref[git_repo]{git repo}, checkout revision {\bf ce9baf234f}. Let's take a look at a
 section of {\bf builtin/push.c} on this revision:
 
 \begin{lstlisting}[style=c_style,
-	basicstyle=\small,
+	basicstyle=\tiny,
 	firstnumber=548,
 	caption={\bf example 14} - Section of {\bf builtin/push.c} in {\bf ce9baf234f}]
 		OPT_BIT('f', "force", &flags, N_("force updates"), TRANSPORT_PUSH_FORCE),
@@ -445,7 +448,7 @@ Let's ask git to rebase on top of {\bf 6652716200}\footnote{{\bf ce9baf234f} and
 see a {\bf CB} related to the section of {\bf builtin/push.c} that I showed you before:
 
 \begin{lstlisting}[style=c_style,
-	basicstyle=\small,
+	basicstyle=\tiny,
 	firstnumber=550,
 	caption={\bf example 14} - {\bf CB} in {\bf builtin/push.c}]
 		OPT_BIT('f', "force", &flags, N_("force updates"), TRANSPORT_PUSH_FORCE),
@@ -478,7 +481,7 @@ see a {\bf CB} related to the section of {\bf builtin/push.c} that I showed you 
 You remember the revision you were on when you ran {\bf rebase}? It was on {\bf ce9baf234f}, right? Look at {\bf UB}. Does
 it look the way it was in {\bf ce9baf234f}? No? Ok. How about {\bf LB}? Oh, it's there! And then, what is on {\bf UB}? You
 remember that I said that {\bf UB} {\bf always} contains code as it is in {\bf HEAD}? Well, that is correct, even in this case.
-The trick that you have to realize is that when you run a {\bf rebase} git first checks out the bease branch for the rebase and
+The trick that you have to realize is that when you run a {\bf rebase} git first checks out the base branch for the rebase and
 then starts to apply the revisions that you ask to rebase {\bf on top} of the base branch.
 
 So, in our current example, in {\bf UB} you will see the code as it is in {\bf 6652716200} and in {\bf LB} you will see the
@@ -500,7 +503,7 @@ in lines 571-572.
 I don't see much difference between working from {\bf UB } and {\bf LB}. Let's start working from {\bf UB}:
 
 \begin{lstlisting}[style=c_style,
-	basicstyle=\small,
+	basicstyle=\tiny,
 	firstnumber=550,
 	caption={\bf example 14} - Step 1 {\bf UB} in {\bf builtin/push.c}]
 <<<<<<< HEAD
@@ -515,7 +518,7 @@ I don't see much difference between working from {\bf UB } and {\bf LB}. Let's s
 
 Then we modify the way that {\bf recurse-submodules} is defined as in {\bf dML}:
 \begin{lstlisting}[style=c_style,
-	basicstyle=\small,
+	basicstyle=\tiny,
 	firstnumber=550,
 	caption={\bf example 14} - Step 2 {\bf UB} in {\bf builtin/push.c}]
 <<<<<<< HEAD
@@ -529,7 +532,7 @@ Then we modify the way that {\bf recurse-submodules} is defined as in {\bf dML}:
 
 And we are done:
 \begin{lstlisting}[style=c_style,
-	basicstyle=\small,
+	basicstyle=\tiny,
 	firstnumber=550,
 	caption={\bf example 14} - Solution of {\bf CB} in {\bf builtin/push.c}]
 		OPT_BIT('f', "force", &flags, N_("force updates"), TRANSPORT_PUSH_FORCE),
@@ -543,6 +546,10 @@ And we are done:
 
 We add the file to index, nothing else is pending and so we can continue with the rebase
 \footnote{{\bf git add builtin/push.c; git rebase --continue}}.
+
+\subsection{Tips}
+Regarless of the operation being done (merge, cherry-pick, revert, rebase), always use the same technique to solve
+conflicts: {\bf dMU}/{\bf dML}, {\bf Resolution}.
 
 
 % TODO Talk about that even though methodology is the same for all cases, when doing historical analysis, things change
