@@ -211,7 +211,8 @@ Like this:
 	const unsigned hashsz = the_hash_algo->rawsz;
 \end{lstlisting}
 
-From the plain coding point if view, it {\bf might} be correct{\bf Am I'm willing to say it's not correct but anyway, continue reading.}.
+From the plain coding point if view, it {\bf might} be correct
+\footnote{\bf And I'm willing to say it's not correct but anyway, continue reading.}.
 Code compiles and behaves the same, right? But you are breaking the {\bf intent} of the revision you are cherry-picking. Just so that you
 can glance the consequences of this decision, what would happen if, later on, you needed to cherry-pick another revision that uses this
 same macro? Now that you have {\bf broken} the values that you are using for it, you will have to do more adjustments on the code than
