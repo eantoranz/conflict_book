@@ -1,0 +1,553 @@
+% copyright 2020 Edmundo Carmona Antoranz
+% Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
+
+\section{cherry-pick, rebase, revert}
+\label{other_ops}
+
+Ya han visto como son los {\bf merge conflicts}, los que aparecen cuando se hace una operación de mezcla.
+Hay otras 3 operaciones que pueden generar conflictos:
+
+\begin{itemize}
+	\item {\bf git cherry-pick}
+	\item {\bf git rebase }
+	\item {\bf git revert}
+\end{itemize}
+
+Aunque la mecánica básica es la misma, cada sección del {\bf CB} tiene un {\bf significado} diferente
+\footnote{En relación a de donde viene el código que está en cada sección del {\bf CB}}
+
+\subsection{Example 12 - cherry-pick}
+\label{example_12}
+
+En git 2.27, se introdujo este cambio:
+\begin{lstlisting}[style=console_style,
+	caption={\bf Ejemplo 12} - Cambio de {\bf 3be7efcafceeae34}]
+$ git show --pretty= 3be7efcafceeae34
+diff --git a/commit-graph.c b/commit-graph.c
+index f013a84e29..e4f1a5b2f1 100644
+--- a/commit-graph.c
++++ b/commit-graph.c
+@@ -23,6 +23,7 @@
+ #define GRAPH_CHUNKID_DATA 0x43444154 /* "CDAT" */
+ #define GRAPH_CHUNKID_EXTRAEDGES 0x45444745 /* "EDGE" */
+ #define GRAPH_CHUNKID_BASE 0x42415345 /* "BASE" */
++#define MAX_NUM_CHUNKS 5
+ 
+ #define GRAPH_DATA_WIDTH (the_hash_algo->rawsz + 16)
+ 
+@@ -1350,8 +1351,8 @@ static int write_commit_graph_file(struct write_commit_graph_context *ctx)
+        int fd;
+        struct hashfile *f;
+        struct lock_file lk = LOCK_INIT;
+-       uint32_t chunk_ids[6];
+-       uint64_t chunk_offsets[6];
++       uint32_t chunk_ids[MAX_NUM_CHUNKS + 1];
++       uint64_t chunk_offsets[MAX_NUM_CHUNKS + 1];
+        const unsigned hashsz = the_hash_algo->rawsz;
+        struct strbuf progress_title = STRBUF_INIT;
+        int num_chunks = 3;
+\end{lstlisting}
+
+Podemos ver la forma en la que se cambia la forma en la que se define el tamaño de {\bf chunk\_ids} y {\bf chunk\_offsets} a usar
+una macro.
+
+Como un experimento, queremos hacer un {\it backport} de este cambio sobre {\bf v2.22.4}.
+
+\begin{lstlisting}[style=console_style,
+	caption={\bf ejemplo 12} - haciendo {\it backport} de {\bf 3be7efcafceeae34}]
+$ git checkout v2.22.4
+HEAD is now at c9808fa014 Git 2.22.4
+$ git cherry-pick 3be7efcafceeae34
+Auto-merging commit-graph.c
+CONFLICT (content): Merge conflict in commit-graph.c
+error: could not apply 3be7efcafc... commit-graph: define and use MAX_NUM_CHUNKS
+hint: after resolving the conflicts, mark the corrected paths
+hint: with 'git add <paths>' or 'git rm <paths>'
+hint: and commit the result with 'git commit'
+$ git status
+HEAD detached at v2.22.4
+You are currently cherry-picking commit 3be7efcafc.
+  (fix conflicts and run "git cherry-pick --continue")
+  (use "git cherry-pick --skip" to skip this patch)
+  (use "git cherry-pick --abort" to cancel the cherry-pick operation)
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+        both modified:   commit-graph.c
+
+no changes added to commit (use "git add" and/or "git commit -a")
+\end{lstlisting}
+
+Como se ve este conflicto? Hay 2 {\bf CB}s en {\bf commit-graph.c}. El primero de ellos se ve así:
+
+\subsubsection{CB\#1}
+\begin{lstlisting}[style=c_style,
+	firstnumber=25,
+	caption={\bf Ejemplo 12} - {\bf CB\#1} en {\bf commit-graph.c}]
+<<<<<<< HEAD
+||||||| parent of 3be7efcafc... commit-graph: define and use MAX_NUM_CHUNKS
+#define GRAPH_CHUNKID_BASE 0x42415345 /* "BASE" */
+=======
+#define GRAPH_CHUNKID_BASE 0x42415345 /* "BASE" */
+#define MAX_NUM_CHUNKS 5
+>>>>>>> 3be7efcafc... commit-graph: define and use MAX_NUM_CHUNKS
+\end{lstlisting}
+
+Se ve muy parecido a los conflictos que hemos visto hasta ahora, cierto? Exactamente como en un {\bf merge}, hay 3 secciones
+en el {\bf CB} y seguiremos usando los mismos términos/acrónimos que hemos usado. El primero es el {\bf UB}, en otras palabras,
+el código como está en {\bf HEAD}. En este caso, la etiqueta {\bf v2.22.4}, dado que ahí es donde estamos trabajando. A diferencia
+de un {\bf merge}, donde se ve el código de {\bf el ancestro común} en el {\bf MB} y de {\bf la otra rama} en el {\bf LB},
+durante una operación de {\bf cherry-pick}, los otros dos bloques muestran otra cosa, como indican las marcas de conflicto.
+El {\bf MB} nos muestra el contenido de {\bf el papá} de la revisión a la que le estamos haciendo {\bf cherry-pick}
+\footnote{La revision {\bf 9fadedd637}, en caso de que tengan curiosidad}. El {\bf LB} nos muestra el código como está en la revisión
+{\bf 3be7efcafc}, que es la que estamos tratando de hacerle {\bf cherry-pick}. Aunque el {\bf MB} y el {\bf LB} se refieren
+a conceptos diferentes a los de un {\bf merge}, la forma de hacer análisis es {\bf la misma} que hemos utilizado.
+
+\subsubsection{dMU\#1}
+La macro {\bf GRAPH\_CHUNKID\_BASE} (presente en la línea 27) fue borrado.
+
+\subsubsection{dML\#1}
+La macro {\bf MAX\_NUM\_CHUNKS} fue agregada en la línea 30.
+
+\subsubsection{Resolución\#1}
+No veo mucha diferencia entre trabajar desde el {\bf UB} o el {\bf LB}.... simplemente es un poco más
+sencillo {\bf borrar} que tener que copiar cambios de un sitio al otro por lo tanto trabajaremos desde
+el {\bf LB}:
+
+\begin{lstlisting}[style=c_style,
+	firstnumber=28,
+	caption={\bf Ejemplo 12} - {\bf LB\#1} en {\bf commit-graph.c}]
+=======
+#define GRAPH_CHUNKID_BASE 0x42415345 /* "BASE" */
+#define MAX_NUM_CHUNKS 5
+>>>>>>> 3be7efcafc... commit-graph: define and use MAX_NUM_CHUNKS
+\end{lstlisting}
+
+Luego, como lo pide el {\bf dMU}, borramos {\bf GRAPH\_CHUNKID\_BASE}.
+
+\begin{lstlisting}[style=c_style,
+	firstnumber=28,
+	caption={\bf Ejemplo 12} - {\bf LB\#1} en {\bf commit-graph.c}]
+=======
+#define MAX_NUM_CHUNKS 5
+>>>>>>> 3be7efcafc... commit-graph: define and use MAX_NUM_CHUNKS
+\end{lstlisting}
+
+Se remueven las otras secciones del conflicto y los marcadores y terminamos.
+
+\begin{lstlisting}[style=c_style,
+	firstnumber=24,
+	caption={\bf Ejemplo 12} - Solución del {\bf CB\#1} en {\bf commit-graph.c}]
+#define GRAPH_CHUNKID_EXTRAEDGES 0x45444745 /* "EDGE" */
+#define MAX_NUM_CHUNKS 5
+
+#define GRAPH_DATA_WIDTH (the_hash_algo->rawsz + 16)
+\end{lstlisting}
+
+Luego vamos al {\bf CB\#2} en {\bf commit-graph.c}:
+\footnote{Números de línea luego de solucionar el {\bf CB\#1}}
+\subsubsection{CB\#2}
+\begin{lstlisting}[style=c_style,
+	firstnumber=1031,
+	caption={\bf Ejemplo 12} - {\bf CB\#2} en {\bf commit-graph.c}]
+<<<<<<< HEAD
+	uint32_t chunk_ids[5];
+	uint64_t chunk_offsets[5];
+||||||| parent of 3be7efcafc... commit-graph: define and use MAX_NUM_CHUNKS
+	uint32_t chunk_ids[6];
+	uint64_t chunk_offsets[6];
+=======
+	uint32_t chunk_ids[MAX_NUM_CHUNKS + 1];
+	uint64_t chunk_offsets[MAX_NUM_CHUNKS + 1];
+>>>>>>> 3be7efcafc... commit-graph: define and use MAX_NUM_CHUNKS
+\end{lstlisting}
+
+\subsubsection{dMU\#2}
+El tamaño de {\bf chunk\_ids} y {\bf chunk\_offsets} fue cambiado de 6 a 5.
+
+\subsubsection{dML\#2}
+Descartamos el valor numérico y los reemplazamos por {\bf MAX\_NUM\_CHUNKS + 1}, usando la macro dedinida en el {\bf CB} anterior.
+
+\subsubsection{Resolución\#2}
+En este caso especial, podemos quedarnos con lo que tenemos en el {\bf LB} ``tal cual`` dado que el cambio de 6 a 5
+no tiene incidencia en el requerimiento: Seguimos usando la macro así que:
+\begin{lstlisting}[style=c_style,
+	firstnumber=1030,
+	caption={\bf Ejemplo 12} - Solución del {\bf CB\#2} en {\bf commit-graph.c}]
+	struct lock_file lk = LOCK_INIT;
+	uint32_t chunk_ids[MAX_NUM_CHUNKS + 1];
+	uint64_t chunk_offsets[MAX_NUM_CHUNKS + 1];
+	const unsigned hashsz = the_hash_algo->rawsz;
+\end{lstlisting}
+
+Y listo!
+
+... O bueno, eso creen! Recuerdan la {\it intención} de la revisión a la que le estamos haciendo {\bf cherry-pick}?
+Se refería a la forma en la que se define el tamaño de los arreglos para que usen una macro. Eso es probablemente para poder
+fácilmente cambiar su tamaño luego de ser necesario con solo ajustar el valor de la macro. Bien! Pero no la estamos aplicando
+en una revisión que tenía {\bf 6} como tamaño del arreglo. El tamaño del arreglo en {\bf HEAD} es {\bf 5} y ese tamaño debe
+permanecer igual. Lo que significa que debemos cambiar el tamaño del macro a {\bf 4}, para que el tamaño de los arreglos sea el
+correcto. Así que debemos regresar al {\bf CB\#1} y ajustar el valor de la macro:
+
+\begin{lstlisting}[style=c_style,
+	firstnumber=24,
+	caption={\bf Ejemplo 12} - Ajuste de la solución del {\bf CB\#1} en {\bf commit-graph.c}]
+#define GRAPH_CHUNKID_EXTRAEDGES 0x45444745 /* "EDGE" */
+#define MAX_NUM_CHUNKS 4
+
+#define GRAPH_DATA_WIDTH (the_hash_algo->rawsz + 16)
+\end{lstlisting}
+
+Y {\bf ahora} sí terminamos! Esa es la forma en la que el {\bf dMU} entra en juego en la resolución del conflicto, aunque no
+fue en el {\bf CB} que estábamos trabajando.\footnote{Les dije que siempre se trata de \hyperref[intent]{intención}?}
+
+{\bf Pregunta}: estaría bien si dejamos la macro con el valor de {\bf 5} y cambiamos los arreglos en el {\bf CB\#2} para que
+usen {\bf MAX\_NUMS\_CHUNKS}?
+De esta forma:
+
+\begin{lstlisting}[style=c_style,
+	firstnumber=1030,
+	caption={\bf Ejemplo 12} - Solución alternativa al {\bf CB\#2} en {\bf commit-graph.c}]
+	struct lock_file lk = LOCK_INIT;
+	uint32_t chunk_ids[MAX_NUM_CHUNKS];
+	uint64_t chunk_offsets[MAX_NUM_CHUNKS];
+	const unsigned hashsz = the_hash_algo->rawsz;
+\end{lstlisting}
+
+Desde el punto de vista del código, {\bf podría} estarlo {\bf Y estaría dispuesto a decir que no es correcto, de todos modos... pero
+sigan leyendo}. El código compila y se comporta de la forma esperada, cierto? Pero están rompiendo la {\bf intención} de la revisión
+a la que le están haciendo {\bf cherry-pick}. Solo para que se imaginen un posible escenario como consecuencia de esto, que sucedería
+si, más adelante, necesitaran hacer un {\bf cherry-pick} de otra revisión que use el valor de esta misma macro? Ahora que el valor ha sido
+{\it roto}, tendrán que introducir más ajustes sobre el código por sobre la intención de lo que estén haciéndole {\bf cherry-pick}
+en ese momento.... y puede ser que ni si quiera tengan conflictos cuando hagan el {\bf cherry-pick}. Se podrán acordar de este cambio
+para que logren detectar estas situaciones para arreglar el código? Yo se que sí podría.... pero solo por los siguientes
+{\bf 30 segundos} luego de modificar el código, pero no creo que lo pueda recordar más allá de eso.... y se qué es extremadamente
+difícil que todos logremos recordar todos estos detalles. Conclusión: Apéguense a la {\bf intención original} del parche.
+Considérense advertidos.
+
+\subsection{Ejemplo 13 - revert}
+
+Cuando se quiere revertir cambios que fueron introducidos por una revisión, la operación que se aplica es {\bf revert}
+\footnote{No estamos hablando de quitar una revisión e la historia de la rama, lo cual implica hacer un {\bf rewrite} de
+la historia (como i la revisión nunca se hubiera aplicado). {\bf Revertir} una revisión mantenrá la historia justo como
+está actualmente y se creará una revisión adicional sobre la rama actual para revertir los cambios introducidos por la
+revisión que estamos revirtiendo}. Consideremos un pequeño ejemplo de git:
+
+Desde el \hyperref[git_repo]{repo de git}, hagan checkout de la etiqueta {\bf v2.26.2}. Vamos a revertir la revisión {\bf 22a69fda197f}.
+Primero veamos lo que hizo la revisión originalmente sobre {\bf builtin/rebase.c}:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\tiny,
+	caption={\bf Ejemplo 13} - Revisión original]
+$ git show --pretty="" 22a69fda197f -- builtin/rebase.c
+diff --git a/builtin/rebase.c b/builtin/rebase.c
+index 8081741f8a..faa4e0d406 100644
+--- a/builtin/rebase.c
++++ b/builtin/rebase.c
+@@ -453,8 +453,9 @@ int cmd_rebase__interactive(int argc, const char **argv, const char *prefix)
+                OPT_NEGBIT(0, "ff", &opts.flags, N_("allow fast-forward"),
+                           REBASE_FORCE),
+                OPT_BOOL(0, "keep-empty", &opts.keep_empty, N_("keep empty commits")),
+-               OPT_BOOL(0, "allow-empty-message", &opts.allow_empty_message,
+-                        N_("allow commits with empty messages")),
++               OPT_BOOL_F(0, "allow-empty-message", &opts.allow_empty_message,
++                          N_("allow commits with empty messages"),
++                          PARSE_OPT_HIDDEN),
+                OPT_BOOL(0, "rebase-merges", &opts.rebase_merges, N_("rebase merge commits")),
+                OPT_BOOL(0, "rebase-cousins", &opts.rebase_cousins,
+                         N_("keep original branch points of cousins")),
+@@ -1495,9 +1496,10 @@ int cmd_rebase(int argc, const char **argv, const char *prefix)
+                OPT_STRING_LIST('x', "exec", &exec, N_("exec"),
+                                N_("add exec lines after each commit of the "
+                                   "editable list")),
+-               OPT_BOOL(0, "allow-empty-message",
+-                        &options.allow_empty_message,
+-                        N_("allow rebasing commits with empty messages")),
++               OPT_BOOL_F(0, "allow-empty-message",
++                          &options.allow_empty_message,
++                          N_("allow rebasing commits with empty messages"),
++                          PARSE_OPT_HIDDEN),
+                {OPTION_STRING, 'r', "rebase-merges", &rebase_merges,
+                        N_("mode"),
+                        N_("try to rebase merges instead of skipping them"),
+\end{lstlisting}
+
+La revisión cambió las llamadas originales a {\bf OPT\_BOOL} por {\bf OPT\_BOOL\_F} para definir {\bf allow-empty-message}, y
+se hizo unos ajustes sobre los parámetros de las llamadas. Eso quiere decir que debemos terminar con llamadas a {\bf OPT\_BOOL}
+si queremos {\bf revertir}, cierto? Intentémoslo:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption={\bf Ejemplo 13} - Revirtiendo]
+$ git revert --no-commit 22a69fda197f
+Auto-merging builtin/rebase.c
+CONFLICT (content): Merge conflict in builtin/rebase.c
+Auto-merging Documentation/git-rebase.txt
+error: could not revert 22a69fda19... git-rebase.txt: update description of --allow-empty-message
+hint: after resolving the conflicts, mark the corrected paths
+hint: with 'git add <paths>' or 'git rm <paths>'
+$ git status
+HEAD detached at v2.26.2
+You are currently reverting commit 22a69fda19.
+  (fix conflicts and run "git revert --continue")
+  (use "git revert --skip" to skip this patch)
+  (use "git revert --abort" to cancel the revert operation)
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        modified:   Documentation/git-rebase.txt
+
+Unmerged paths:
+  (use "git restore --staged <file>..." to unstage)
+  (use "git add <file>..." to mark resolution)
+        both modified:   builtin/rebase.c
+\end{lstlisting}
+
+Hay un {\bf CB} en {\bf builtin/rebase.c}:
+\begin{lstlisting}[style=c_style,
+	basicstyle=\tiny,
+	firstnumber=473,
+	caption={\bf Ejemplo 13} - {\bf CB} en {\bf builtin/rebase.c}]
+<<<<<<< HEAD
+		{ OPTION_CALLBACK, 'k', "keep-empty", &options, NULL,
+			N_("(DEPRECATED) keep empty commits"),
+			PARSE_OPT_NOARG | PARSE_OPT_HIDDEN,
+			parse_opt_keep_empty },
+		OPT_BOOL_F(0, "allow-empty-message", &opts.allow_empty_message,
+			   N_("allow commits with empty messages"),
+			   PARSE_OPT_HIDDEN),
+||||||| 22a69fda19... git-rebase.txt: update description of --allow-empty-message
+		OPT_BOOL(0, "keep-empty", &opts.keep_empty, N_("keep empty commits")),
+		OPT_BOOL_F(0, "allow-empty-message", &opts.allow_empty_message,
+			   N_("allow commits with empty messages"),
+			   PARSE_OPT_HIDDEN),
+=======
+		OPT_BOOL(0, "keep-empty", &opts.keep_empty, N_("keep empty commits")),
+		OPT_BOOL(0, "allow-empty-message", &opts.allow_empty_message,
+			 N_("allow commits with empty messages")),
+>>>>>>> parent of 22a69fda19... git-rebase.txt: update description of --allow-empty-message
+\end{lstlisting}
+
+Esto no es muy diferente de lo que vimos anteriormente en {\bf cherry-pick}, cierto? {\bf UB} es como está el
+código en {\bf v2.26.2}, dado que esa es la revisión donde estábamos al comenzar. La parte interesante es en los otros
+dos bloques. Se pueder ver por los marcadores que es {\bf MB} es como se ve el código en la revisión que queremos revertir
+(en otras palabras, el código {\bf luego} de aplicar la revisión originalmente) y en {\bf UB} está como se ve en el padre
+de la revisión que queremos revertir, es decir el orden {\bf opuesto} de cómo se presentam estos dos bloques a cuando se
+hace un {\bf cherry-pick}. En {\bf cherry-pick}, el {\bf MB} es el paá de la revisión a la que se le hace {\bf cherry-pick}
+y en {\bf LB} está el código luego de aplicar la revisión. Eso significa que, justo como en {\bf merge} y {\bf cherry-pick},
+nosotros debemos seguir la misma metodología que hemos aplicado hasta ahora analizando el {\bf dMU} y el {\bf dML}.
+
+\subsubsection{dMU}
+La forma en la que se define {\bf keep-empty} se cambia de una llamada a {\bf OPT\_BOOL()} en la línea 482 a una definición
+{\bf a mano} en las líneas 474-477.
+
+\subsubsection{dML}
+La forma en la que se define {\bf allow-empty-message} se cambia de una llamada a {\bf OPT\_BOOL\_F()} en las líneas 483-485 a
+una llamada a {\bf OPT\_BOOL()} en las líneas 488-489, lo cual también remueve {\bf PARSE\_OPT\_HIDDEN} como parámetro de la
+llamada.
+
+\subsubsection{Resolución}
+Nos quedaremos trabajando en el {\bf UB}, solo porque el cambio de la definición de {\bf keep-empty} es más grande que 
+el cambio de la definición de {\bf allow-empty-message}. Luego aplicaremos el cambio de la llamada de la macro {\bf OPT\_BOOL\_F()}
+a {\bf OPT\_BOOL()} (líneas 478-480):
+
+\begin{lstlisting}[style=c_style,
+	basicstyle=\small,
+	firstnumber=473,
+	caption={\bf Ejemplo 13} - Paso 1 {\bf UB} en {\bf builtin/rebase.c}]
+<<<<<<< HEAD
+		{ OPTION_CALLBACK, 'k', "keep-empty", &options, NULL,
+			N_("(DEPRECATED) keep empty commits"),
+			PARSE_OPT_NOARG | PARSE_OPT_HIDDEN,
+			parse_opt_keep_empty },
+		OPT_BOOL_F(0, "allow-empty-message", &opts.allow_empty_message,
+			   N_("allow commits with empty messages"),
+			   PARSE_OPT_HIDDEN),
+||||||| 22a69fda19... git-rebase.txt: update description of --allow-empty-message
+\end{lstlisting}
+
+Removemos {\bf PARSE\_OPT\_HIDDEN} como parámetro (presente en la línea 480):
+\begin{lstlisting}[style=c_style,
+	basicstyle=\small,
+	firstnumber=473,
+	caption={\bf Ejemplo 13} - Paso 2 {\bf UB} en {\bf builtin/rebase.c}]
+<<<<<<< HEAD
+		{ OPTION_CALLBACK, 'k', "keep-empty", &options, NULL,
+			N_("(DEPRECATED) keep empty commits"),
+			PARSE_OPT_NOARG | PARSE_OPT_HIDDEN,
+			parse_opt_keep_empty },
+		OPT_BOOL(0, "allow-empty-message", &opts.allow_empty_message,
+			   N_("allow commits with empty messages")),
+||||||| 22a69fda19... git-rebase.txt: update description of --allow-empty-message
+\end{lstlisting}
+
+Desplazamos la segunda línea de los argmentos para que esté alineada con la posición de la
+llamada (línea 479):
+\begin{lstlisting}[style=c_style,
+	basicstyle=\small,
+	firstnumber=473,
+	caption={\bf Ejemplo 13} - Paso 3 {\bf UB} en {\bf builtin/rebase.c}]
+<<<<<<< HEAD
+		{ OPTION_CALLBACK, 'k', "keep-empty", &options, NULL,
+			N_("(DEPRECATED) keep empty commits"),
+			PARSE_OPT_NOARG | PARSE_OPT_HIDDEN,
+			parse_opt_keep_empty },
+		OPT_BOOL(0, "allow-empty-message", &opts.allow_empty_message,
+			 N_("allow commits with empty messages")),
+||||||| 22a69fda19... git-rebase.txt: update description of --allow-empty-message
+\end{lstlisting}
+
+Y ya terminamos con el {\bf revert}:
+
+\begin{lstlisting}[style=c_style,
+	basicstyle=\tiny,
+	firstnumber=470,
+	caption={\bf Ejemplo 13} - Solución del {\bf CB} en {\bf builtin/rebase.c}]
+	struct option options[] = {
+		OPT_NEGBIT(0, "ff", &opts.flags, N_("allow fast-forward"),
+			   REBASE_FORCE),
+		{ OPTION_CALLBACK, 'k', "keep-empty", &options, NULL,
+			N_("(DEPRECATED) keep empty commits"),
+			PARSE_OPT_NOARG | PARSE_OPT_HIDDEN,
+			parse_opt_keep_empty },
+		OPT_BOOL(0, "allow-empty-message", &opts.allow_empty_message,
+			 N_("allow commits with empty messages"),
+		OPT_BOOL(0, "rebase-merges", &opts.rebase_merges, N_("rebase merge commits")),
+\end{lstlisting}
+
+Y podemos ver como terminamos con la llamada a {\bf OPT\_BOOL()} para definir {\bf allow-empty-message}, justo lo que
+queríamos para lograr la reversión.
+
+Sólo para que vean que las mismas reglas aplican para hacer el {\bf revert}, intenten hacer la resolución del conflicto pero
+trabajando desde el {\bf LB} y aplicando los cambios del {\bf dMU}. Deben terminar con exactamente el mismo código.
+
+\subsection{Ejemplo 14 - rebase}
+
+Juguemos un poco. Del \hyperref[git_repo]{repo de git}, hagan checkout de la revisión {\bf ce9baf234f}. Veamos una sección
+del código de {\bf builtin/push.c} en esta revisión:
+
+\begin{lstlisting}[style=c_style,
+	basicstyle=\tiny,
+	firstnumber=548,
+	caption={\bf Ejemplo 14} - Sección de {\bf builtin/push.c} en {\bf ce9baf234f}]
+		OPT_BIT('f', "force", &flags, N_("force updates"), TRANSPORT_PUSH_FORCE),
+		{ OPTION_CALLBACK,
+		  0, CAS_OPT_NAME, &cas, N_("<refname>:<expect>"),
+		  N_("require old value of ref to be at this value"),
+		  PARSE_OPT_OPTARG | PARSE_OPT_LITERAL_ARGHELP, parseopt_push_cas_option },
+		OPT_CALLBACK(0, "recurse-submodules", &recurse_submodules, "(check|on-demand|no)",
+			     N_("control recursive pushing of submodules"), option_parse_recurse_submodules),
+		OPT_BOOL_F( 0 , "thin", &thin, N_("use thin pack"), PARSE_OPT_NOCOMPLETE),
+\end{lstlisting}
+
+Miren cuidadosamente la forma en la que {\bf $<$refname$>$:$<$expect$>$} y {\bf recurse-submodules} están definidas.
+{\bf $<$refname$>$:$<$expect$>$} se define {\bf manualmente} en las líneas 549-552 y {\bf recurse-submodules} se define
+con una llamada a {\bf OPT\_CALLBACK} en las líneas 553-554.
+
+Pidámosle a git que haga un {\bf rebase} sobre la revisión {\bf 6652716200}\footnote{{\bf ce9baf234f} y {\bf 6652716200}
+son los padres de la revisión {\bf b75dc16ae3}. Los comandos para hacer esto son: {\bf git checkout ce9baf234f; git rebase 6652716200}}.
+Deben ver un {\bf CB} relativo a la ección de {\bf builtin/push.c} que les mostré previamente:
+
+\begin{lstlisting}[style=c_style,
+	basicstyle=\tiny,
+	firstnumber=550,
+	caption={\bf Ejemplo 14} - {\bf CB} en {\bf builtin/push.c}]
+		OPT_BIT('f', "force", &flags, N_("force updates"), TRANSPORT_PUSH_FORCE),
+<<<<<<< HEAD
+		OPT_CALLBACK_F(0, CAS_OPT_NAME, &cas, N_("<refname>:<expect>"),
+			       N_("require old value of ref to be at this value"),
+			       PARSE_OPT_OPTARG | PARSE_OPT_LITERAL_ARGHELP, parseopt_push_cas_option),
+		{ OPTION_CALLBACK, 0, "recurse-submodules", &recurse_submodules, "(check|on-demand|no)",
+			N_("control recursive pushing of submodules"),
+			PARSE_OPT_OPTARG, option_parse_recurse_submodules },
+||||||| parent of ce9baf234f... push: unset PARSE_OPT_OPTARG for --recurse-submodules
+		{ OPTION_CALLBACK,
+		  0, CAS_OPT_NAME, &cas, N_("<refname>:<expect>"),
+		  N_("require old value of ref to be at this value"),
+		  PARSE_OPT_OPTARG | PARSE_OPT_LITERAL_ARGHELP, parseopt_push_cas_option },
+		{ OPTION_CALLBACK, 0, "recurse-submodules", &recurse_submodules, "(check|on-demand|no)",
+			N_("control recursive pushing of submodules"),
+			PARSE_OPT_OPTARG, option_parse_recurse_submodules },
+=======
+		{ OPTION_CALLBACK,
+		  0, CAS_OPT_NAME, &cas, N_("<refname>:<expect>"),
+		  N_("require old value of ref to be at this value"),
+		  PARSE_OPT_OPTARG | PARSE_OPT_LITERAL_ARGHELP, parseopt_push_cas_option },
+		OPT_CALLBACK(0, "recurse-submodules", &recurse_submodules, "(check|on-demand|no)",
+			     N_("control recursive pushing of submodules"), option_parse_recurse_submodules),
+>>>>>>> ce9baf234f... push: unset PARSE_OPT_OPTARG for --recurse-submodules
+		OPT_BOOL_F( 0 , "thin", &thin, N_("use thin pack"), PARSE_OPT_NOCOMPLETE),
+\end{lstlisting}
+
+Recuerdan la revisión en la que estábamos cuando corrimos el {\bf rebase}? Era la {\bf ce9baf234f}, cierto? Miren el {\bf UB}.
+Se ve como lo que está en {\bf ce9baf234f}? No? Ok. Y el {\bf LB}? Ah, ahí está! Y entonces qué hay en el {\bf UB}?
+Recuerdan que les dije que en {\bf UB} siempre está lo que hay en {\bf HEAD}? Pues bien, eso pasa también en este caso.
+El truco es darse cuenta de que cuando se hace un {\bf rebase}, primero git tiene que hacer {\bf checkout} de la rama sobre
+la que se va a a hacer el {\bf rebase} y entonces se aplican las revisiones a las que se les va a hacer rebase.
+
+Así que, en nuestro ejemplo, en {\bf UB} se vería el código como está en {\bf 6652716200} y en {\bf LB} se vería
+el códogo como lo que está en {\bf ce9baf234f}. En {\bf MB} se vería el papá de la revisión que se está tratando de aplicar
+en ese momento. En todo caso, siempre se puede ver los detalles de lo que hay en cada sección del {\bf CB} a través de las marcas
+de conflicto.
+
+Ahora que hemos aclarado todo el asunto, es el momento de continuar con nuestro análisis como lo hemos hecho hasta ahora, sin cambios:
+
+\subsubsection{dMU}
+La forma en la que se define{\bf $<$refname$>$:$<$expect$>$} es cambiada de {\bf a mano} en las líneas 559-562 por una llamada a
+{\bf OPT\_CALLBACK\_F()} en las líneas 552-554.
+
+\subsubsection{dML}
+La forma en la que se define {\bf recurse-submodules} se cambia de {\it a mano} en las líneas 563-565 a una llamada a
+{\bf OPT\_CALLBACK()} en las líneas 571-572.
+
+\subsubsection{Resolución}
+No veo mucha diferencia entre trabajar desde el {\bf UB} o desde el {\bf LB}. Comencemos a trabajar desde el {\bf UB}:
+
+\begin{lstlisting}[style=c_style,
+	basicstyle=\tiny,
+	firstnumber=550,
+	caption={\bf Ejemplo 14} - Paso 1 {\bf UB} en {\bf builtin/push.c}]
+<<<<<<< HEAD
+		OPT_CALLBACK_F(0, CAS_OPT_NAME, &cas, N_("<refname>:<expect>"),
+			       N_("require old value of ref to be at this value"),
+			       PARSE_OPT_OPTARG | PARSE_OPT_LITERAL_ARGHELP, parseopt_push_cas_option),
+		{ OPTION_CALLBACK, 0, "recurse-submodules", &recurse_submodules, "(check|on-demand|no)",
+			N_("control recursive pushing of submodules"),
+			PARSE_OPT_OPTARG, option_parse_recurse_submodules },
+||||||| parent of ce9baf234f... push: unset PARSE_OPT_OPTARG for --recurse-submodules
+\end{lstlisting}
+
+Modificamos la forma en la que se define {\bf recurse-submodules} según el {\bf dML}:
+\begin{lstlisting}[style=c_style,
+	basicstyle=\tiny,
+	firstnumber=550,
+	caption={\bf Ejemplo 14} - Paso 2 {\bf UB} en {\bf builtin/push.c}]
+<<<<<<< HEAD
+		OPT_CALLBACK_F(0, CAS_OPT_NAME, &cas, N_("<refname>:<expect>"),
+			       N_("require old value of ref to be at this value"),
+			       PARSE_OPT_OPTARG | PARSE_OPT_LITERAL_ARGHELP, parseopt_push_cas_option),
+		OPT_CALLBACK(0, "recurse-submodules", &recurse_submodules, "(check|on-demand|no)",
+			     N_("control recursive pushing of submodules"), option_parse_recurse_submodules),
+||||||| parent of ce9baf234f... push: unset PARSE_OPT_OPTARG for --recurse-submodules
+\end{lstlisting}
+
+Y listo!
+\begin{lstlisting}[style=c_style,
+	basicstyle=\tiny,
+	firstnumber=550,
+	caption={\bf Ejemplo 14} - Solución del {\bf CB} en {\bf builtin/push.c}]
+		OPT_BIT('f', "force", &flags, N_("force updates"), TRANSPORT_PUSH_FORCE),
+		OPT_CALLBACK_F(0, CAS_OPT_NAME, &cas, N_("<refname>:<expect>"),
+			       N_("require old value of ref to be at this value"),
+			       PARSE_OPT_OPTARG | PARSE_OPT_LITERAL_ARGHELP, parseopt_push_cas_option),
+		OPT_CALLBACK(0, "recurse-submodules", &recurse_submodules, "(check|on-demand|no)",
+			     N_("control recursive pushing of submodules"), option_parse_recurse_submodules),
+		OPT_BOOL_F( 0 , "thin", &thin, N_("use thin pack"), PARSE_OPT_NOCOMPLETE),
+\end{lstlisting}
+
+Agregamos el archivo al índice, no hay nada más pendiente y podemos continuar con el rebase.
+\footnote{{\bf git add builtin/push.c; git rebase --continue}}.
+
+
+% TODO Talk about that even though methodology is the same for all cases, when doing historical analysis, things change
+% deleted code? Well... no need to do blame-reverse and so on

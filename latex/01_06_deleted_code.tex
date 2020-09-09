@@ -485,6 +485,103 @@ Borramos el {\bf CB} por completo:
 
 Y si comparamos con la revisión {\bf 56ceb64eb0}, no debería haber diferencias significativas.
 
+\subsection{No se impresionen por conflictos grandes}
+El código borrado puede producir conflictos muy grades que, al mirar más detenidamente, en realidad no lo son tanto.
+Cuando se borra código en una rama y se modifica por lo menos una de esas líneas borradas en otra rama, git no puede
+hacer mucho más que mostrar el código original y como se ve el código en las dos puntas que se mezclan, usando {\bf diff3}
+como siempre debemos hacer, cierto? Si el bloque era originalmente de 5 líneas al comienzo y termina de 6 al final y en la
+otra rama se borran las 5 líneas originales, eso sería 11 líneas más marcadores.... no suena muy grande. Pero si el código
+original era de 300 líneas y el código final también es de 300 líneas con una línea modificada y en la otra rama se borran las
+300 líneas originales, ahora estamos hablando de 300 * 2 + marcadores. Y todo ello por una línea de código que fue modificada.
+Los ejemplos que intentamos previamente sobre código borrado no han sido grandes... así que utilicemos u ejemplo con {\it algunas}
+líneas más.
+
+\subsection{Ejemplo 11}
+
+Del \hyperref[git_repo]{repo de git}, hagan checkout de la revisión {\bf d88949d86e} y mezclen {\bf d9f62dfa0d}
+\footnote{Estos son los padres de la revisión {\bf 769af0fd9e}}. Miren el {\bf CB} en {\bf ref-filter.c}. El {\bf CB} comienza en la
+línea 1680 y termina en la línea 1959 así que no voy a escribir el contenido del {\bf CB} en el artículo debido al tamaño.
+Pero igualmente vamos a hacer el análisis y la resolución.
+
+\subsubsection{dMU}
+Toda ls sección fue borrada.
+
+\subsubsection{dML}
+Les voy a dar 5 minutos para que ustedes lo descubran por ustedes mismos. Luego les diré cual es la diferencia así que,
+déjen de leer, miren el códogo por y minutos y vuelvan! {\bf Sin hacer trampas!}
+
+[Pasan 5 minutos]
+
+Entonces... lo pudieron ver? Se cambia {\bf !oidcpm()} por {\bf oideq()}, cierto? Fue difícil verlo? Seguro que lo fue....
+en realidad no puedo asegurarlo ya que yo {\bf no} lo hice visualmente. Dejé que git me ayudara:
+
+\begin{lstlisting}[style=c_style,
+	firstnumber=1054,
+	caption={\bf Ejemplo 11} - {\bf git diff}]
+$ git diff HEAD...MERGE_HEAD -- ref-filter.c
+diff --git a/ref-filter.c b/ref-filter.c
+index 0bccfceff2..ccca317ce1 100644
+--- a/ref-filter.c
++++ b/ref-filter.c
+@@ -1710,7 +1710,7 @@ struct contains_stack {
+ static int in_commit_list(const struct commit_list *want, struct commit *c)
+ {
+        for (; want; want = want->next)
+-               if (!oidcmp(&want->item->object.oid, &c->object.oid))
++               if (oideq(&want->item->object.oid, &c->object.oid))
+                        return 1;
+        return 0;
+ }
+\end{lstlisting}
+git es una herramienta de analisis fenomenal. Traten de aprender como extraer lo más posible:
+
+De vuelta al conflicto... vieron? Todas esas 279 líneas de conflicto horrible se deben a este pequeño cambio (y el borrado
+en el {\bf dMU}, por supuesto). Ahora que sabemos de qué se trataba, pueden resolver este conflicto por sí solos, cierto?
+Inténtelo. Aquí está la lista completa de los cambios para que verifiquen al final:
+
+Luego de averiguar que el código en cuestión fue {\bf movido}:
+\begin{lstlisting}[style=c_style,
+	firstnumber=426,
+	caption={\bf Ejemplo 11} - {\bf commit-reach.c}]
+static int in_commit_list(const struct commit_list *want, struct commit *c)
+{
+	for (; want; want = want->next)
+		if (oideq(&want->item->object.oid, &c->object.oid))
+			return 1;
+	return 0;
+}
+\end{lstlisting}
+
+Removiendo el {\bf CB} de {\bf ref-filter.c}:
+\begin{lstlisting}[style=c_style,
+	firstnumber=1679,
+	caption={\bf Ejemplo 11} - {\bf ref-filter.c}]
+/*
+ * Return 1 if the refname matches one of the patterns, otherwise 0.
+ * A pattern can be a literal prefix (e.g. a refname "refs/heads/master"
+ * matches a pattern "refs/heads/mas") or a wildcard (e.g. the same ref
+ * matches "refs/heads/mas*", too).
+ */
+static int match_pattern(const struct ref_filter *filter, const char *refname)
+{
+\end{lstlisting}
+
+También hay un conflicto en este archivo:
+\begin{lstlisting}[style=c_style,
+	firstnumber=1763,
+	caption={\bf Ejemplo 11} - {\bf builtin/log.c}]
+	if (ignore_if_in_upstream) {
+		/* Don't say anything if head and upstream are the same. */
+		if (rev.pending.nr == 2) {
+			struct object_array_entry *o = rev.pending.objects;
+			if (oideq(&o[0].item->oid, &o[1].item->oid))
+				goto done;
+		}
+		get_patch_ids(&rev, &ids);
+	}
+\end{lstlisting}
+
+
 \subsection{Moraleja}
 Piensen en los conflictos relacionados a código borrado como si se tratara de un iceberg. Solo podemos ver la
 punta del conflicto, pero podría tratarse de una montaña invertida más grande que el Olimpo 
@@ -493,6 +590,5 @@ en \href{https://es.wikipedia.org/wiki/Olimpo}{Grecia}}
 
 \subsection{Ejercicios}
 \subsubsection{Ejercicio 6}
-Del \hyperref[git_repo]{repode git}, hagan checkout de la revisión {\bf 0194c9ad72} y mezclen la revisión {\bf aa46a0da30}.
+Del \hyperref[git_repo]{repo de git}, hagan checkout de la revisión {\bf 0194c9ad72} y mezclen la revisión {\bf aa46a0da30}.
 La solución está \hyperref[exercise_06]{aquí}.
-
