@@ -226,6 +226,7 @@ difícil que todos logremos recordar todos estos detalles. Conclusión: Apéguen
 Considérense advertidos.
 
 \subsection{Ejemplo 13 - revert}
+\label{example_13}
 
 Cuando se quiere revertir cambios que fueron introducidos por una revisión, la operación que se aplica es {\bf revert}
 \footnote{No estamos hablando de quitar una revisión e la historia de la rama, lo cual implica hacer un {\bf rewrite} de
@@ -273,11 +274,11 @@ index 8081741f8a..faa4e0d406 100644
 \end{lstlisting}
 
 La revisión cambió las llamadas originales a {\bf OPT\_BOOL} por {\bf OPT\_BOOL\_F} para definir {\bf allow-empty-message}, y
-se hizo unos ajustes sobre los parámetros de las llamadas. Eso quiere decir que debemos terminar con llamadas a {\bf OPT\_BOOL}
-si queremos {\bf revertir}, cierto? Intentémoslo:
+se hizo unos ajustes sobre los parámetros de las llamadas. Eso quiere decir que debemos terminar con una llamada a {\bf OPT\_BOOL}
+para definir {\bf allow-empty-message} si queremos {\bf revertir}, cierto? Intentémoslo:
 
 \begin{lstlisting}[style=console_style,
-	basicstyle=\small,
+	basicstyle=\tiny,
 	caption={\bf Ejemplo 13} - Revirtiendo]
 $ git revert --no-commit 22a69fda197f
 Auto-merging builtin/rebase.c
@@ -352,7 +353,7 @@ el cambio de la definición de {\bf allow-empty-message}. Luego aplicaremos el c
 a {\bf OPT\_BOOL()} (líneas 478-480):
 
 \begin{lstlisting}[style=c_style,
-	basicstyle=\small,
+	basicstyle=\tiny,
 	firstnumber=473,
 	caption={\bf Ejemplo 13} - Paso 1 {\bf UB} en {\bf builtin/rebase.c}]
 <<<<<<< HEAD
@@ -368,7 +369,7 @@ a {\bf OPT\_BOOL()} (líneas 478-480):
 
 Removemos {\bf PARSE\_OPT\_HIDDEN} como parámetro (presente en la línea 480):
 \begin{lstlisting}[style=c_style,
-	basicstyle=\small,
+	basicstyle=\tiny,
 	firstnumber=473,
 	caption={\bf Ejemplo 13} - Paso 2 {\bf UB} en {\bf builtin/rebase.c}]
 <<<<<<< HEAD
@@ -384,7 +385,7 @@ Removemos {\bf PARSE\_OPT\_HIDDEN} como parámetro (presente en la línea 480):
 Desplazamos la segunda línea de los argmentos para que esté alineada con la posición de la
 llamada (línea 479):
 \begin{lstlisting}[style=c_style,
-	basicstyle=\small,
+	basicstyle=\tiny,
 	firstnumber=473,
 	caption={\bf Ejemplo 13} - Paso 3 {\bf UB} en {\bf builtin/rebase.c}]
 <<<<<<< HEAD
@@ -422,6 +423,7 @@ Sólo para que vean que las mismas reglas aplican para hacer el {\bf revert}, in
 trabajando desde el {\bf LB} y aplicando los cambios del {\bf dMU}. Deben terminar con exactamente el mismo código.
 
 \subsection{Ejemplo 14 - rebase}
+\label{example_14}
 
 Juguemos un poco. Del \hyperref[git_repo]{repo de git}, hagan checkout de la revisión {\bf ce9baf234f}. Veamos una sección
 del código de {\bf builtin/push.c} en esta revisión:
@@ -547,6 +549,10 @@ Y listo!
 
 Agregamos el archivo al índice, no hay nada más pendiente y podemos continuar con el rebase.
 \footnote{{\bf git add builtin/push.c; git rebase --continue}}.
+
+\subsection{Tips}
+Regarless of the operation being done (merge, cherry-pick, revert, rebase), always use the same technique to solve
+conflicts: {\bf dMU}/{\bf dML}, {\bf Resolution}.
 
 
 % TODO Talk about that even though methodology is the same for all cases, when doing historical analysis, things change
