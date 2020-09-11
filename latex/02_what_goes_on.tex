@@ -1,0 +1,388 @@
+% copyright 2020 Edmundo Carmona Antoranz
+% Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
+
+Vamos a empaparnos un poco de las cosas que suceden cuando hay un conflicto. Para poder entender esta sección de la mejor
+forma posible, deben tener una compresión cristalina de lo que son estos {\bf dos conceptos específicos} en git:
+
+\begin{itemize}
+	\item {\bf revisión}\footnote{Si no son capaces de decir lo que es una {\bf rama} en git con solo 5 palabras
+	(sin contar la introducción ``Una rama es...''... y es en serio, solo 5 palabras son suficientes),
+	entonces probablemente deberían estudiar lo que es una {\bf revisión} y cómo difiere de una {\bf rama}.}
+	\item {\bf index} o {\bf staging area}\footnote{Algunas personas piensas que son dos conceptos diferentes pero
+	no lo son. Son dos formas de llamar al mismo concepto.}
+\end{itemize}
+
+Si no están absolutamente seguros de lo que son, mejor paren y vuelvan cuando ya lo estén. Les prometo que no voy a
+continuar con la explicación hasta que vuelvan.
+
+\section{Un No-Conflicto}
+Primero veamos como funciona git en una revisión normal, antes de entrar a estudiar lo que sucede cuando hay conflictos
+al hacer una mezcla. Trabajemos con las ramas del \hyperref[example_09]{ejemplo 09} (antes de hacer el merge). Inmediatamente
+después de hacer {\bf checkout} de {\bf example9/branchA}, miremos el status:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption={\bf git status} sobre un árbol limpio]
+$ git status
+On branch example9/branchA
+nothing to commit, working tree clean
+\end{lstlisting}
+
+Como sabe git que no hay cambios en el {\bf árbol de trabajo}? git compara el {\bf árbol de trabajo} con el {\bf index}:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption={\bf git ls-files} en un árbol limpio]
+$ git ls-files -s
+100644 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f 0       .gitignore
+100755 ad957360597fb9bd3e83d4bfa869f6e19b7fbf2b 0       example.py
+100644 475f980e6c6e24f8fc4a144e498fa1c1c59da370 0       module.py
+\end{lstlisting}
+
+git está listando los permisos, el ID del objeto, el {\bf index stage}\footnote{Sobre esto vamos a hablar más adelante} y el nombre
+del archivo de cada uno de los archivos en la revisión actual. git compara los archivos en el {\bf árbol de trabajo} y ve que
+nada ha cambiado.
+% TODO make sure this is correct: It doesn't actually check the content of every file when we run git status, as that would be too time-consuming..
+
+Lo siguiente sería modificar {\bf example.py} de alguna forma. Luego de modificarlo y guardarlo, git se da cuenta de que
+el archivo ha cambiado porque ya no se corresponde con lo lo que está en el {\bf index}. La información del {\bf index}
+no va a cambiar hasta que agreguemos el archivo, por supuesto. Así que agreguemos el archivo al {\bf index} y veamos lo que
+{\bf git ls-files} tiene para nosotros:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption={\bf git ls-files} con un archivo modificado]
+$ git add example.py
+$ git status
+On branch example9/branchA
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        modified:   example.py
+
+$ git ls-files -s
+100644 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f 0       .gitignore
+100755 b30ade699b80860abd0ed6d84cff9df94e801d34 0       example.py
+100644 475f980e6c6e24f8fc4a144e498fa1c1c59da370 0       module.py
+\end{lstlisting}
+
+Podemos ver que el id del objeto de {\bf example.py} cambió\footnote{No se preocupen si el id no es el mismo que para ustedes en {\bf example.py}.
+Ese id depende del contenido y va a ser muy difícil sea como las modificaciones que yo le hice al archivo} pero aparte de eso no hay otras
+diferencias. Como puede saber git los ids de los objetos que había en el {\bf index} antes de agregarlos? git también tiene esa información
+de {\bf HEAD}:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption={\bf git ls-tree} sobre {\bf example9/branchA}]
+$ git ls-tree -r HEAD
+100644 blob 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f    .gitignore
+100755 blob ad957360597fb9bd3e83d4bfa869f6e19b7fbf2b    example.py
+100644 blob 475f980e6c6e24f8fc4a144e498fa1c1c59da370    module.py
+\end{lstlisting}
+
+Y podemos ver que los ids de los 3 archivos son los mismos que se tenía originalmente en el {\bf index} cuando hicimos {\bf checkout}.
+Ahora que el id de {\bf example.py} cambió entre {\bf HEAD} y lo que hay en el {\bf index}, git sabe que hay contenido nuevo asociado
+a {\bf example.py} en el {\bf index} que está listo para ser acometido. Por eso nos muestra el archivo en {\bf Changes to be committed}.
+
+Modifiquemos el archivo una vez más {\it sin agregarlo} y veamos lo que sucede:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption=Luego de modificar un archivo ya {\bf agregado}]
+$ git status
+On branch example9/branchA
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        modified:   example.py
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   example.py
+
+$ git ls-tree -r HEAD
+100644 blob 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f    .gitignore
+100755 blob ad957360597fb9bd3e83d4bfa869f6e19b7fbf2b    example.py
+100644 blob 475f980e6c6e24f8fc4a144e498fa1c1c59da370    module.py
+$ git ls-files -s
+100644 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f 0       .gitignore
+100755 b30ade699b80860abd0ed6d84cff9df94e801d34 0       example.py
+100644 475f980e6c6e24f8fc4a144e498fa1c1c59da370 0       module.py
+\end{lstlisting}
+
+Esto es interesante. {\bf example.py} se muestra en {\bf Changes to be committed} porque el id del archivo cambió
+entre {\bf HEAD} e {\bf index}. Pero también aparece en {\bf Changes not staged for commit} prque git se da cuenta de que
+el archivo en {\bf el árbol de trabajo} no conincide con el objeto en el {\bf index}. Si lo agregamos de nuevo y verificamos:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption=Luego de agregar el archivo de nuevo]
+$ git add example.py 
+$ git status
+On branch example9/branchA
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        modified:   example.py
+
+$ git ls-tree -r HEAD
+100644 blob 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f    .gitignore
+100755 blob ad957360597fb9bd3e83d4bfa869f6e19b7fbf2b    example.py
+100644 blob 475f980e6c6e24f8fc4a144e498fa1c1c59da370    module.py
+$ git ls-files -s
+100644 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f 0       .gitignore
+100755 1858db13464ae33329a90cacbe294e749ea9a1a5 0       example.py
+100644 475f980e6c6e24f8fc4a144e498fa1c1c59da370 0       module.py
+\end{lstlisting}
+
+Fíjense como el id del objeto asociado a {\bf example.py} en el {\bf index} cambió (de
+{\bf b30ade699b8....} a {\bf 1858db13464....}). Los ids de los objetos son diferentes entre {\bf index} y {\bf HEAD }
+y por eso el archivo parece en {\bf Changes to be committed}. El contenido del archivo ahora es igual al del {\bf index}
+y por eso git sabe que no hay más nada que reportar sobre el archivo. Si creáramos una revisión en este momento, cual
+sería el resultado?
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption=acometiendo]
+$ git commit -m "Some test"
+[example9/branchA b2f9a40] Some test
+ 1 file changed, 6 insertions(+)
+$ git status
+On branch example9/branchA
+nothing to commit, working tree clean
+$ git ls-tree -r HEAD
+100644 blob 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f    .gitignore
+100755 blob 1858db13464ae33329a90cacbe294e749ea9a1a5    example.py
+100644 blob 475f980e6c6e24f8fc4a144e498fa1c1c59da370    module.py
+$ git ls-files -s
+100644 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f 0       .gitignore
+100755 1858db13464ae33329a90cacbe294e749ea9a1a5 0       example.py
+100644 475f980e6c6e24f8fc4a144e498fa1c1c59da370 0       module.py
+\end{lstlisting}
+
+Y ahora el id de {\bf example.py} cambió en {\bf HEAD}\footnote{Ahora en una revisión diferente} a lo que estaba en el {\bf index}
+cuando creamos la revisión({\bf 1858db13464ae33329a90cacbe294e749ea9a1a5}). Ahora los ids de los archivos son los mismos
+entre {\bf HEAD} e {\bf index} y el archivo en {\bf el árbol de trabajo} coincide con lo que está en el {\bf index}, así que
+git no tiene nada que reportar al respecto en {\bf git status}.
+
+Hagamos un reset de la rama para jugar con conflictos:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption=Haciendo reset]
+$ git reset --hard HEAD~
+HEAD is now at dfde76c A little refactor (moving condition to another function)
+\end{lstlisting}
+
+\section{Un conflicto}
+Veamos lo que sucede cuando hay un conflicto. Hagamos checkout de {\bf example9/branchB} y mezclemos {\bf example9/branchA}:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption=Mezclando]
+$ git merge example9/branchA
+Auto-merging example.py
+CONFLICT (content): Merge conflict in example.py
+Automatic merge failed; fix conflicts and then commit the result.
+$ git status
+On branch example9/branchB
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Changes to be committed:
+        modified:   module.py
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+        both modified:   example.py
+
+$ git ls-tree -r HEAD
+100644 blob 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f    .gitignore
+100755 blob 500616dc70f4847f244d29d827a192b7fa03de93    example.py
+100644 blob 2d1fe2ea52267ab6e75cca853c393fc6929a0e45    module.py
+$ git ls-files -s
+100644 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f 0       .gitignore
+100755 b0a7eae10629dec61246f86c08f2432f0e276675 1       example.py
+100755 500616dc70f4847f244d29d827a192b7fa03de93 2       example.py
+100755 ad957360597fb9bd3e83d4bfa869f6e19b7fbf2b 3       example.py
+100644 475f980e6c6e24f8fc4a144e498fa1c1c59da370 0       module.py
+\end{lstlisting}
+
+Podemos ver que {\bf example.py} aparece en {\bf Unmerged paths}, y {\bf module.py} está listado en {\bf Changes to be committed}.
+{\bf .gitignore} no sale listado en {\bf git status}. {\bf .gitignore} no ha cambiado entre {\bf HEAD}, {\bf index} y lo que
+está en {\bf el árbol de trabajo} así que no hay nada que reportar sobre él. {\bf module.py} cambió como parte del proceso de
+mezcla {\it sin conflictos} y por eso está presente tanto en {\bf HEAD} como en el {\bf index} con un id {\it different}. El archivo
+que está actualmente en {\bf el árbol de trabajo} es justo como está en el {\bf index} y por eso sale listado en 
+{\bf Changes to be committed}. Lo interesante es con respecto a {\bf example.py}. En vez de tener un solo ítem del archivo
+en el {\bf index}, hay 3 y cada instancia tiene un {\bf index stage } diferente del 1 al 3. Cuando hay un {\bf conflicto de contenido}
+en un archivo (como en este caso), git va a guardar 3 versiones del archivo en el {\bf index}. {\bf Stage } número 1 es el archivo
+como está en {\bf el ancestro común}\footnote{durante un {\bf merge}. Ya saben como cambia ese término según la operación}.
+{\bf Stage} número 2 es el archivo como está en {\bf HEAD}. {\bf Stage} número 3 es el archivo como está en {\bf la otra rama}.
+Vean por sí mismos:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption=Verificando los ids de {\bf example.py} en las diferentes versiones]
+$ git ls-tree $( git merge-base HEAD MERGE_HEAD ) example.py
+100755 blob b0a7eae10629dec61246f86c08f2432f0e276675    example.py
+$ git ls-tree HEAD example.py
+100755 blob 500616dc70f4847f244d29d827a192b7fa03de93    example.py
+$ git ls-tree MERGE_HEAD example.py
+100755 blob ad957360597fb9bd3e83d4bfa869f6e19b7fbf2b    example.py
+\end{lstlisting}
+
+{\bf Stage} número 0, como vimos antes, significa que el archivo no tiene cambios o que fue agregado al {\bf index}.
+
+Resolvamos el conflicto como habíamos hecho antes (lo que significa editar ambos archivos) y entonces veamos la
+salida de comandos git:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption={\bf git status} luego de modificar los archivos]
+$ git status
+On branch example9/branchB
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Changes to be committed:
+        modified:   module.py
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+        both modified:   example.py
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   module.py
+
+$ git ls-tree -r HEAD
+100644 blob 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f    .gitignore
+100755 blob 500616dc70f4847f244d29d827a192b7fa03de93    example.py
+100644 blob 2d1fe2ea52267ab6e75cca853c393fc6929a0e45    module.py
+$ git ls-files -s
+100644 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f 0       .gitignore
+100755 b0a7eae10629dec61246f86c08f2432f0e276675 1       example.py
+100755 500616dc70f4847f244d29d827a192b7fa03de93 2       example.py
+100755 ad957360597fb9bd3e83d4bfa869f6e19b7fbf2b 3       example.py
+100644 475f980e6c6e24f8fc4a144e498fa1c1c59da370 0       module.py
+\end{lstlisting}
+
+Aunque los ids de los objetos en {\bf index} y {\bf HEAD} no han cambiado, el contenido de los archivos cambió en
+{\bf el árbol de trabajo}. Dado que {\bf module.py} tiene un id diferente entre {\bf index} y {\bf HEAD}, git lo muestra
+en {\bf Changes to be committed}. Dado que el contenido del archivo en {\bf el árbol de trabajo} es diferente de {\bf index},
+también se lista en {\bf Changes not staged for commit}. {\bf example.py} no ha sido agregado al {\bf index}, así que
+para git sigue con conflictosy mantiene las 3 versiones en el {\bf index} y se lista en {\bf Unmerged paths}.
+
+Agreguemos {\bf module.py} primero y veamos qué sucede:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption=Luego de agregar {\bf module.py}]
+$ git add module.py 
+$ git status         
+On branch example9/branchB
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Changes to be committed:
+        modified:   module.py
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+        both modified:   example.py
+
+$ git ls-tree -r HEAD
+100644 blob 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f    .gitignore
+100755 blob 500616dc70f4847f244d29d827a192b7fa03de93    example.py
+100644 blob 2d1fe2ea52267ab6e75cca853c393fc6929a0e45    module.py
+$ git ls-files -s    
+100644 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f 0       .gitignore
+100755 b0a7eae10629dec61246f86c08f2432f0e276675 1       example.py
+100755 500616dc70f4847f244d29d827a192b7fa03de93 2       example.py
+100755 ad957360597fb9bd3e83d4bfa869f6e19b7fbf2b 3       example.py
+100644 42004985f8888627d3985174325a235401568e0b 0       module.py
+\end{lstlisting}
+
+Para este archivo, se comporta como sucedía antes cuando no había conflictos. Los ids para este archivo son diferentes are 
+entre {\bf HEAD} e {\bf index} y por eso sale listado en {\bf Changes to be committed}. El archivo en {\bf el árbol de trabajo}
+es como está en el {\bf index} ahora y por eso git no tiene más nada que reportar sobre él. {\bf example.py} sigue con conflictos
+y por eso no hay cambios en cuanto a lo que veíamos previamente.
+
+Ahora agreguemos {\bf example.py}:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption=Luego de agregar {\bf example.py}]
+$ git add example.py 
+$ git status
+On branch example10/branchB
+All conflicts fixed but you are still merging.
+  (use "git commit" to conclude merge)
+
+Changes to be committed:
+        modified:   example.py
+        modified:   module.py
+
+$ git ls-tree -r HEAD
+100644 blob 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f    .gitignore
+100755 blob 500616dc70f4847f244d29d827a192b7fa03de93    example.py
+100644 blob 2d1fe2ea52267ab6e75cca853c393fc6929a0e45    module.py
+$ git ls-files -s
+100644 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f 0       .gitignore
+100755 ad957360597fb9bd3e83d4bfa869f6e19b7fbf2b 0       example.py
+100644 42004985f8888627d3985174325a235401568e0b 0       module.py
+\end{lstlisting}
+
+Ahora que el archivo que (originalmente) tenía conflictos ha sido agregado, tenemos un solo ítem para él
+en el {\bf index}. Dado que los ids no son los mismos entre {\bf HEAD} e {\bf index}, git lo reporta en {\bf Changed to be committed}
+y dado que el contenido del archivo en {\bf el árbol de trabajo} es como en el {\bf index}, git no tiene más nada que decir sobre él.
+Creemos una nueva revisión en este momento y veamos qué sucede.
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption={\bf git commit}]
+$ git commit -m "A new revision"
+[example9/branchB 9f80666] A new revision
+$ git status
+On branch example9/branchB
+nothing to commit, working tree clean
+$ git ls-tree -r HEAD
+100644 blob 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f    .gitignore
+100755 blob ad957360597fb9bd3e83d4bfa869f6e19b7fbf2b    example.py
+100644 blob 42004985f8888627d3985174325a235401568e0b    module.py
+$ git ls-files -s
+100644 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f 0       .gitignore
+100755 ad957360597fb9bd3e83d4bfa869f6e19b7fbf2b 0       example.py
+100644 42004985f8888627d3985174325a235401568e0b 0       module.py
+\end{lstlisting}
+
+Como sucedió anteriormente cuando no había conflictos, cuando se crea una nueva revisión, los ids en {\bf HEAD}
+son actualizados a los mismos ids del {\bf index}\footnote{En realidad no es que se actualiza la información de {\bf HEAD}.
+Lo que sucede es que {\bf HEAD} apunta a una revisión que se acaba de crear usando la información del {\bf index}}. Dado
+que {\bf index} y {\bf HEAD} tienen los mismos ids, no hay nada listado en {\bf Changes to be committed} y dado que no hay
+diferencias entre el {\bf index} y {\bf el arbol de trabajo}, no hay más nada que reportar.
+
+Si se detienen a pensarlo, aparte de los 3 items listados en {\bf index} mientras el archivo tenía conflictos, no hay
+otras diferencias en cuanto a lo que se guardó en {\bf index} o en las revisiones. Dentro de todo, git {\bf no} guarda
+ninguna información sobre los archivos que tuvieron conflictos cuando se crea una revisión. Simplemente crea una nueva revisión
+con sus múltiples padres, los archivos y sus contenidos (finales) justo como en cualquier otra revisión:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption=Verificando la información de la revisión]
+$ git cat-file -p HEAD
+tree 396032b1546d75672f3a85c13a858d3b187d2046
+parent 3cd9cfd24b13fa2381c5cc8009275b961ea7a26b
+parent dfde76c316ff0a070ddc7560f86b7279b73ed807
+author Developer A <dev.a@localhost> 1592110970 -0600
+committer Developer A <dev.a@localhost> 1592111469 -0600
+
+A new revision
+$ git cat-file -p HEAD^{tree}
+100644 blob 2f78cf5b66514f2506d9af5f3dadf3dee7aa6d9f    .gitignore
+100755 blob ad957360597fb9bd3e83d4bfa869f6e19b7fbf2b    example.py
+100644 blob 42004985f8888627d3985174325a235401568e0b    module.py
+\end{lstlisting}
+

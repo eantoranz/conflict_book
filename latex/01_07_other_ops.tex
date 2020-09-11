@@ -214,7 +214,7 @@ De esta forma:
 	const unsigned hashsz = the_hash_algo->rawsz;
 \end{lstlisting}
 
-Desde el punto de vista del código, {\bf podría} estarlo {\bf Y estaría dispuesto a decir que no es correcto, de todos modos... pero
+Desde el punto de vista del código, {\bf podría} estarlo \footnote{Y estaría dispuesto a decir que no es correcto, de todos modos... pero
 sigan leyendo}. El código compila y se comporta de la forma esperada, cierto? Pero están rompiendo la {\bf intención} de la revisión
 a la que le están haciendo {\bf cherry-pick}. Solo para que se imaginen un posible escenario como consecuencia de esto, que sucedería
 si, más adelante, necesitaran hacer un {\bf cherry-pick} de otra revisión que use el valor de esta misma macro? Ahora que el valor ha sido
