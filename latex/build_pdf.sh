@@ -1,4 +1,4 @@
 #!/bin/bash
 
-pdflatex conflicts.tex && pdflatex conflicts.tex
+pdflatex -draftmode conflicts.tex && pdflatex conflicts.tex
 

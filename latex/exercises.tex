@@ -314,13 +314,13 @@ static void *get_obj(const struct object_id *oid, struct object **obj, unsigned 
 
 It's a conflict ouf of deleted code.
 
-\subsubsection{dMU}
+\subsection*{dMU}
 Modified the call to {\bf parse\_object\_buffer()} to have {\bf the\_repository} as the first argument on line 856.
 
-\subsubsection{dML}
+\subsection*{dML}
 Deleted the whole section of code.
 
-\subsubsection{Resolution}
+\subsection*{Resolution}
 Should we delete the whole {\bf CB} and move on with our lives? I really hope you had a Pavlov reflex saying {\bf NOOOOO!!!!!}
 Good! All the hard work is paying off. We need to find out what happened with that code. The hard way is to find out
 in what revision that code was deleted to see if it was moved. First, we do the {\bf git blame --reverse}:
@@ -461,4 +461,546 @@ static int grab_objectname(const char *name, const struct object_id *oid,
 \end{lstlisting}
 
 And if you now check differences with revision {\bf c83149ace6}, you should get none.
+
+\section{Exercise 7}
+\label{exercise_07}
+
+From \hyperref[git_repo]{git repo}, checkout revision {\bf 4284497396} and merge {\bf cdb5330a9b}\footnote{These are the
+parents of revision {\bf dcd6a8c09a}}. Solve all conflicts.
+
+\subsection*{CB in diff.h}
+
+There's one API conflict in {\bf diff.h}
+
+\begin{lstlisting}[style=c_style,
+	basicstyle=\small,
+	firstnumber=443,
+	caption={\bf Exercise 7} - {\bf CB} in {\bf diff.h}]
+<<<<<<< HEAD
+void diff_no_index(struct rev_info *, int, const char **);
+||||||| 125dcea963
+void diff_no_index(struct repository *, struct rev_info *, int, const char **);
+=======
+int diff_no_index(struct repository *, struct rev_info *,
+		  int implicit_no_index, int, const char **);
+>>>>>>> cdb5330a9b
+\end{lstlisting}
+
+Looks very straight forward:
+
+\subsubsection*{dMU}
+Removed {\bf struct repository *} as an argument to {\bf diff\_no\_index} call.
+
+\subsubsection*{dML}
+Added (or rather, {\it inserted}) {\bf int implicit\_no\_index} as an argument to {\bf diff\_no\_index} call.
+
+\subsubsection*{Resolution}
+Given that it is much simpler to {\bf delete} things than moving things around, we will work from {\bf LB}.
+
+\begin{lstlisting}[style=c_style,
+	firstnumber=447,
+	caption={\bf Exercise 7} - Step 1 {\bf LB} in {\bf diff.h}]
+=======
+int diff_no_index(struct repository *, struct rev_info *,
+		  int implicit_no_index, int, const char **);
+>>>>>>> cdb5330a9b
+\end{lstlisting}
+
+Then we delete {\bf struct repository *} as an argument.
+
+\begin{lstlisting}[style=c_style,
+	firstnumber=447,
+	caption={\bf Exercise 7} - Step 2 {\bf LB} in {\bf diff.h}]
+=======
+int diff_no_index(struct rev_info *,
+		  int implicit_no_index, int, const char **);
+>>>>>>> cdb5330a9b
+\end{lstlisting}
+
+\begin{lstlisting}[style=c_style,
+	firstnumber=441,
+	caption={\bf Exercise 7} - Resolution {\bf CB} in {\bf diff.h}]
+int diff_result_code(struct diff_options *, int);
+
+int diff_no_index(struct rev_info *, int implicit_no_index, int,
+		  const char **);
+
+int index_differs_from(struct repository *r, const char *def,
+		       const struct diff_flags *flags,
+		       int ita_invisible_in_index);
+\end{lstlisting}
+
+Notice how I repositioned the arguments to match a more {\it git-project standards} formatting.
+
+This of course means that all existing calls to {\bf diff\_no\_index} will be broken. It's likely that there will
+be some conflicting ones, but we already know that there might be some that might get away with it that we will
+have to hunt down.\footnote{Given that this is a c project, it's not like those broken calls that didn't get a conflict
+will make it alive. If we avoid them for any reason, when we compile the project they will burst in flames. Working on
+python? Well, you might have to sit down to {\bf really} find them.}
+
+\subsection*{CB in builtin/diff.c}
+
+This one will make us sweat a little bit.
+
+\begin{lstlisting}[style=c_style,
+	basicstyle=\small,
+	firstnumber=324,
+	caption={\bf Exercise 7} - {\bf CB} in {\bf builtin/diff.c}]
+<<<<<<< HEAD
+	if (no_index && argc != i + 2) {
+		if (no_index == DIFF_NO_INDEX_IMPLICIT) {
+			/*
+			 * There was no --no-index and there were not two
+			 * paths. It is possible that the user intended
+			 * to do an inside-repository operation.
+			 */
+			fprintf(stderr, "Not a git repository\n");
+			fprintf(stderr,
+				"To compare two paths outside a working tree:\n");
+		}
+		/* Give the usage message for non-repository usage and exit. */
+		usagef("git diff %s <path> <path>",
+		       no_index == DIFF_NO_INDEX_EXPLICIT ?
+		       "--no-index" : "[--no-index]");
+
+	}
+||||||| 125dcea963
+	if (no_index && argc != i + 2) {
+		if (no_index == DIFF_NO_INDEX_IMPLICIT) {
+			/*
+			 * There was no --no-index and there were not two
+			 * paths. It is possible that the user intended
+			 * to do an inside-repository operation.
+			 */
+			fprintf(stderr, "Not a git repository\n");
+			fprintf(stderr,
+				"To compare two paths outside a working tree:\n");
+		}
+		/* Give the usage message for non-repository usage and exit. */
+		usagef("git diff %s <path> <path>",
+		       no_index == DIFF_NO_INDEX_EXPLICIT ?
+		       "--no-index" : "[--no-index]");
+
+	}
+	if (no_index)
+		/* If this is a no-index diff, just run it and exit there. */
+		diff_no_index(the_repository, &rev, argc, argv);
+
+	/* Otherwise, we are doing the usual "git" diff */
+	rev.diffopt.skip_stat_unmatch = !!diff_auto_refresh_index;
+=======
+	if (no_index)
+		/* If this is a no-index diff, just run it and exit there. */
+		exit(diff_no_index(the_repository, &rev,
+				   no_index == DIFF_NO_INDEX_IMPLICIT,
+				   argc, argv));
+
+	/* Otherwise, we are doing the usual "git" diff */
+	rev.diffopt.skip_stat_unmatch = !!diff_auto_refresh_index;
+>>>>>>> cdb5330a9b
+\end{lstlisting}
+
+This one looks like each one of the blocks has taken care of removing one part of the {\bf MB}. Let's go through
+with the whole analysis process.
+
+\subsubsection*{dMU}
+The second conditional from {\bf MB} (lines 360-362) along with the code that followed have been removed.
+
+\subsubsection*{dML}
+The first conditional from {\bf MB} (lines 343-359) has been removed. The call to {\bf diff\_no\_index} got
+a new parameter (from the expression {\bf no\_index == DIFF\_NO\_INDEX\_IMPLICIT }) and it is now enclosed inside one
+{\bf exit} call (lines 360-362). At this point I want you to be very {\it cautious} about what will happen with conflict
+resolution because this is the call that we had to work for {\bf API conflicts} in the previous {\bf CB}.
+
+
+\subsubsection*{Resolution}
+
+Always wanting to do a thorough analysis, let's check when/how the code was {\bf deleted} on each branch.
+
+\paragraph{Code deleted toward HEAD}
+First, let's try a reverse blame to see when the code was present last time:
+
+\begin{lstlisting}[style=console_style,
+	caption={\bf Exercise 7} - {\bf git blame reverse}]
+$ git blame -s --reverse MERGE_HEAD..HEAD builtin/diff.c
+.
+.
+.
+^cdb5330a9b 321)        repo_init_revisions(the_repository, &rev, prefix);
+^cdb5330a9b 322) 
+^cdb5330a9b 323)        if (no_index)
+^cdb5330a9b 324)                /* If this is a no-index diff, just run it and exit there. */
+^cdb5330a9b 325)                exit(diff_no_index(the_repository, &rev,
+^cdb5330a9b 326)                                   no_index == DIFF_NO_INDEX_IMPLICIT,
+^cdb5330a9b 327)                                   argc, argv));
+^cdb5330a9b 328) 
+^cdb5330a9b 329)        /* Otherwise, we are doing the usual "git" diff */
+^cdb5330a9b 330)        rev.diffopt.skip_stat_unmatch = !!diff_auto_refresh_index;
+^cdb5330a9b 331) 
+^cdb5330a9b 332)        /* Scale to real terminal size and respect statGraphWidth config */
+\end{lstlisting}
+
+Last time those lines were visible {\bf toward} {\bf HEAD} was on revision {\bf cdb5330a9b} and by checking the history
+of the file we will be able to find where those lines were removed. There are ony a handful of revisions to check:
+
+\begin{lstlisting}[style=console_style,
+	caption={\bf Exercise 7} - revisions to check]
+$ git log --oneline cdb5330a9b..HEAD -- builtin/diff.c
+12e5bdd9c4 Merge branch 'jk/diff-no-index-initialize'
+287ab28bfa diff: reuse diff setup for --no-index case
+3a14fdec88 Merge branch 'sl/const'
+33de80b1d5 various: tighten constness of some local variables
+f8adbec9fe cache.h: flip NO_THE_INDEX_COMPATIBILITY_MACROS switch
+1b0d968b34 read-cache.c: replace update_index_if_able with repo_&
+\end{lstlisting}
+
+And by checking them one by one we find our culprit in {\bf 287ab28bfae14}:
+
+\begin{lstlisting}[style=console_style,
+	caption={\bf Exercise 7} - revision where code was {\it moved}]
+$ git show --pretty= 287ab28bfae14 -- builtin/diff.c
+diff --git a/builtin/diff.c b/builtin/diff.c
+index f0393bba23..777ca87156 100644
+--- a/builtin/diff.c
++++ b/builtin/diff.c
+@@ -337,21 +337,23 @@ int cmd_diff(int argc, const char **argv, const char *prefix)
+                       "--no-index" : "[--no-index]");
+ 
+        }
+-       if (no_index)
+-               /* If this is a no-index diff, just run it and exit there. */
+-               diff_no_index(the_repository, &rev, argc, argv);
+-
+-       /* Otherwise, we are doing the usual "git" diff */
+-       rev.diffopt.skip_stat_unmatch = !!diff_auto_refresh_index;
+ 
+-       /* Scale to real terminal size and respect statGraphWidth config */
++       /* Set up defaults that will apply to both no-index and regular diffs. */
+        rev.diffopt.stat_width = -1;
+        rev.diffopt.stat_graph_width = -1;
+-
+-       /* Default to let external and textconv be used */
+        rev.diffopt.flags.allow_external = 1;
+        rev.diffopt.flags.allow_textconv = 1;
+ 
++       /* If this is a no-index diff, just run it and exit there. */
++       if (no_index)
++               diff_no_index(&rev, argc, argv);
++
++       /*
++        * Otherwise, we are doing the usual "git" diff; set up any
++        * further defaults that apply to regular diffs.
++        */
++       rev.diffopt.skip_stat_unmatch = !!diff_auto_refresh_index;
++
+        /*
+         * Default to intent-to-add entries invisible in the
+         * index. This makes them show up as new files in diff-files
+\end{lstlisting}
+
+We can see that the code was placed a little bit further down the file. And the lines are there {\it currently}
+in our conflicted file, outside of the {\bf CB}:
+
+\begin{lstlisting}[style=c_style,
+	basicstyle=\small,
+	firstnumber=383,
+	caption={\bf Exercise 7} - section of {\bf builtin/diff.c}]
+	/* If this is a no-index diff, just run it and exit there. */
+	if (no_index)
+		diff_no_index(&rev, argc, argv);
+
+	/*
+	 * Otherwise, we are doing the usual "git" diff; set up any
+	 * further defaults that apply to regular diffs.
+	 */
+	rev.diffopt.skip_stat_unmatch = !!diff_auto_refresh_index;
+\end{lstlisting}
+
+And, just to make sure, we can blame the lines to see if they showed up on this revision we are talking about:
+
+\begin{lstlisting}[style=console_style,
+	caption={\bf Exercise 7} - revision where code was {\it moved}]
+$ git blame -s -L 383,391 -- builtin/diff.c
+287ab28bfae 383)        /* If this is a no-index diff, just run it and exit there. */
+287ab28bfae 384)        if (no_index)
+287ab28bfae 385)                diff_no_index(&rev, argc, argv);
+287ab28bfae 386) 
+287ab28bfae 387)        /*
+287ab28bfae 388)         * Otherwise, we are doing the usual "git" diff; set up any
+287ab28bfae 389)         * further defaults that apply to regular diffs.
+287ab28bfae 390)         */
+287ab28bfae 391)        rev.diffopt.skip_stat_unmatch = !!diff_auto_refresh_index;
+\end{lstlisting}
+
+And this is precisely one of the spots where we have to consider the API change. Remember the function
+we had to adjust? {\bf diff\_no\_index}. Exactly what we have in line {\bf 385}. You can see that in the patch where the
+call is moved, it originally had {\bf the\_repository} as one argument and in the final position that paraneter is {\it gone},
+so that part of our original {\bf API conflict} is done. Coming back the {\bf deleted code analysis}, it seems like we
+can safely assume that all adjustments have been taken care of properly. Now let's check the deleted code on {\bf the other
+branch}.
+
+\paragraph{Code deleted toward the other branch}
+
+\begin{lstlisting}[style=console_style,
+	caption={\bf Exercise 7} - {\bf git blame reverse}]
+$ git blame -s --reverse HEAD..MERGE_HEAD builtin/diff.c
+.
+.
+.
+^4284497396 322)        repo_init_revisions(the_repository, &rev, prefix);
+^4284497396 323) 
+^4284497396 324)        if (no_index && argc != i + 2) {
+^4284497396 325)                if (no_index == DIFF_NO_INDEX_IMPLICIT) {
+^4284497396 326)                        /*
+^4284497396 327)                         * There was no --no-index and there were not two
+^4284497396 328)                         * paths. It is possible that the user intended
+^4284497396 329)                         * to do an inside-repository operation.
+^4284497396 330)                         */
+^4284497396 331)                        fprintf(stderr, "Not a git repository\n");
+^4284497396 332)                        fprintf(stderr,
+^4284497396 333)                                "To compare two paths outside a working tree:\n");
+^4284497396 334)                }
+^4284497396 335)                /* Give the usage message for non-repository usage and exit. */
+^4284497396 336)                usagef("git diff %s <path> <path>",
+^4284497396 337)                       no_index == DIFF_NO_INDEX_EXPLICIT ?
+^4284497396 338)                       "--no-index" : "[--no-index]");
+^4284497396 339) 
+^4284497396 340)        }
+\end{lstlisting}
+
+From {\bf 4284497396}, let's see what revisions are following it:
+
+\begin{lstlisting}[style=console_style,
+	caption={\bf Exercise 7} - revisions to check]
+$ git log 4284497396..MERGE_HEAD --oneline -- builtin/diff.c
+16bb3d714d diff --no-index: use parse_options() instead of diff_opt_parse()
+\end{lstlisting}
+
+Not that many revisions, huh? Let's check:
+
+\begin{lstlisting}[style=console_style,
+	caption={\bf Exercise 7} - revision where code was {\it deleted} and call {\bf adjusted}]
+$ git show 16bb3d714d --pretty= -- builtin/diff.c
+diff --git a/builtin/diff.c b/builtin/diff.c
+index f0393bba23..52dc3e136f 100644
+--- a/builtin/diff.c
++++ b/builtin/diff.c
+@@ -320,26 +320,11 @@ int cmd_diff(int argc, const char **argv, const char *prefix)
+ 
+        repo_init_revisions(the_repository, &rev, prefix);
+ 
+-       if (no_index && argc != i + 2) {
+-               if (no_index == DIFF_NO_INDEX_IMPLICIT) {
+-                       /*
+-                        * There was no --no-index and there were not two
+-                        * paths. It is possible that the user intended
+-                        * to do an inside-repository operation.
+-                        */
+-                       fprintf(stderr, "Not a git repository\n");
+-                       fprintf(stderr,
+-                               "To compare two paths outside a working tree:\n");
+-               }
+-               /* Give the usage message for non-repository usage and exit. */
+-               usagef("git diff %s <path> <path>",
+-                      no_index == DIFF_NO_INDEX_EXPLICIT ?
+-                      "--no-index" : "[--no-index]");
+-
+-       }
+        if (no_index)
+                /* If this is a no-index diff, just run it and exit there. */
+-               diff_no_index(the_repository, &rev, argc, argv);
++               exit(diff_no_index(the_repository, &rev,
++                                  no_index == DIFF_NO_INDEX_IMPLICIT,
++                                  argc, argv));
+ 
+        /* Otherwise, we are doing the usual "git" diff */
+        rev.diffopt.skip_stat_unmatch = !!diff_auto_refresh_index;
+\end{lstlisting}
+
+And here we can see how the code was {\bf indeed} deleted, and we got an adjustment in the call to {\bf diff\_no\_index}.
+If we are so kind to adjust the call that we saw is still in line 385, we should be fine. As given that the {\bf MB} was
+completely {\bf deleted} by what both branches did, that points to this as the ultimate final resolution:
+
+
+\begin{lstlisting}[style=c_style,
+	firstnumber=318,
+	caption={\bf Exercise 7} - {\bf CB} in {\bf builtin/diff.c}]
+	init_diff_ui_defaults();
+	git_config(git_diff_ui_config, NULL);
+	precompose_argv(argc, argv);
+
+	repo_init_revisions(the_repository, &rev, prefix);
+
+	/* Set up defaults that will apply to both no-index and regular diffs. */
+	rev.diffopt.stat_width = -1;
+	rev.diffopt.stat_graph_width = -1;
+	rev.diffopt.flags.allow_external = 1;
+	rev.diffopt.flags.allow_textconv = 1;
+
+	/* If this is a no-index diff, just run it and exit there. */
+	if (no_index)
+		exit(diff_no_index(&rev, no_index == DIFF_NO_INDEX_IMPLICIT,
+				   argc, argv));
+
+	/*
+	 * Otherwise, we are doing the usual "git" diff; set up any
+	 * further defaults that apply to regular diffs.
+	 */
+	rev.diffopt.skip_stat_unmatch = !!diff_auto_refresh_index;
+\end{lstlisting}
+
+Notice how the call to {\bf diff\_no\_index} is enclosed in a call to {\bf exit} and how we inserted
+the new parameter with the value coming from {\bf the other branch}.
+
+
+\subsection*{CB\#1 in diff-no-index.c}
+
+There are 2 {\bf CB}s in {\bf diff-no-index.c}. The first one is directly related to the signature of the function that
+we worked on {\bf diff.h}. Now we are dealing with the signature in the implementation.
+
+\begin{lstlisting}[style=c_style,
+	firstnumber=237,
+	caption={\bf Exercise 7} - {\bf CB\#1} in {\bf diff-no-index.c}]
+<<<<<<< HEAD
+void diff_no_index(struct rev_info *revs,
+		   int argc, const char **argv)
+||||||| 125dcea963
+void diff_no_index(struct repository *r,
+		   struct rev_info *revs,
+		   int argc, const char **argv)
+=======
+static const char * const diff_no_index_usage[] = {
+	N_("git diff --no-index [<options>] <path> <path>"),
+	NULL
+};
+
+int diff_no_index(struct repository *r,
+		  struct rev_info *revs,
+		  int implicit_no_index,
+		  int argc, const char **argv)
+>>>>>>> cdb5330a9b
+\end{lstlisting}
+
+\subsubsection*{dMU}
+Removed {\bf struct repository *r} as an argument to {\bf diff\_no\_index}.
+
+\subsubsection*{dML}
+Added the definition of {\bf diff\_no\_index\_usage} and also {\it inserted} {\bf implicit\_no\_index} as an argument to
+the {\bf diff\_no\_index} call.
+
+\subsubsection*{Resolution}
+It's more than obvious we need to work from {\bf LB}, right?
+
+\begin{lstlisting}[style=c_style,
+	firstnumber=244,
+	caption={\bf Exercise 7} - Step 1 - {\bf LB\#1} in {\bf diff-no-index.c}]
+=======
+static const char * const diff_no_index_usage[] = {
+	N_("git diff --no-index [<options>] <path> <path>"),
+	NULL
+};
+
+int diff_no_index(struct repository *r,
+		  struct rev_info *revs,
+		  int implicit_no_index,
+		  int argc, const char **argv)
+>>>>>>> cdb5330a9b
+\end{lstlisting}
+
+We remove {\bf struct the repository *r} as an argument, per {\bf dMU}.
+
+\begin{lstlisting}[style=c_style,
+	firstnumber=244,
+	caption={\bf Exercise 7} - Step 2 - {\bf LB\#1} in {\bf diff-no-index.c}]
+=======
+static const char * const diff_no_index_usage[] = {
+	N_("git diff --no-index [<options>] <path> <path>"),
+	NULL
+};
+
+int diff_no_index(struct rev_info *revs,
+		  int implicit_no_index,
+		  int argc, const char **argv)
+>>>>>>> cdb5330a9b
+\end{lstlisting}
+
+Done with {\bf CB\#1}:
+
+\begin{lstlisting}[style=c_style,
+	firstnumber=234,
+	caption={\bf Exercise 7} - Resolution of {\bf CB\#1} in {\bf diff-no-index.c}]
+	}
+}
+
+static const char * const diff_no_index_usage[] = {
+	N_("git diff --no-index [<options>] <path> <path>"),
+	NULL
+};
+
+int diff_no_index(struct rev_info *revs,
+		  int implicit_no_index,
+		  int argc, const char **argv)
+{
+	int i, no_index;
+	const char *paths[2];
+\end{lstlisting}
+
+Can you take care of solving the remaning conflicts in the project? Here's what has to be done, once you are done:
+
+\subsection*{CB\#2 in diff-no-index.c}
+\begin{lstlisting}[style=c_style,
+	firstnumber=255,
+	caption={\bf Exercise 7} - Resolution of {\bf CB\#2} in {\bf diff-no-index.c}]
+	struct option *options;
+
+	options = parse_options_concat(no_index_options,
+				       revs->diffopt.parseopts);
+	argc = parse_options(argc, argv, revs->prefix, options,
+			     diff_no_index_usage, 0);
+	if (argc != 2) {
+		if (implicit_no_index)
+			warning(_("Not a git repository. Use --no-index to "
+				  "compare two paths outside a working tree"));
+		usage_with_options(diff_no_index_usage, options);
+	}
+	FREE_AND_NULL(options);
+	for (i = 0; i < 2; i++) {
+\end{lstlisting}
+
+No more need for the call to {\bf repo\_diff\_setup} because {\bf r} (the repository) is no longer a part of the
+parameters of the function we are working on.
+
+\subsection*{CB in diff.c}
+
+\begin{lstlisting}[style=c_style,
+	firstnumber=5530,
+	caption={\bf Exercise 7} - Resolution of {\bf CB} in {\bf diff.c}]
+	ac = parse_options(ac, av, prefix, options->parseopts, NULL,
+			   PARSE_OPT_KEEP_DASHDASH |
+			   PARSE_OPT_KEEP_UNKNOWN |
+			   PARSE_OPT_NO_INTERNAL_HELP |
+			   PARSE_OPT_ONE_SHOT |
+			   PARSE_OPT_STOP_AT_NON_OPTION);
+
+	return ac;
+}
+\end{lstlisting}
+
+We keep {\bf LB} {\it as is} because the new definition to handle {\bf color-moved-ws} per revision {\bf 8ce2020ff07995} will
+also take care of {\bf --no-color-moved-ws}.
+
+\subsubsection{What's missing?}
+Last step would be checkout for any calls to the conflicted function:
+
+\begin{lstlisting}[style=console_style,
+	caption={\bf Exercise 7} - calls to {\bf diff\_no\_index}]
+$ git grep -n "diff_no_index("
+builtin/diff.c:332:             diff_no_index(&rev, no_index == DIFF_NO_INDEX_IMPLICIT, 
+diff-no-index.c:242:int diff_no_index(struct rev_info *revs,
+diff.h:443:int diff_no_index(struct rev_info *, int implicit_no_index, int,
+\end{lstlisting}
+
+And it's all related to the code that we worked on while working on the conflict so we are all good.
+
+Finally, if you compare with {\bf dcd6a8c09a}, you should get no meaningful differences.
 
