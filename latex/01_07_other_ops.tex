@@ -1,22 +1,23 @@
 % copyright 2020 Edmundo Carmona Antoranz
 % Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
 
-\section{cherry-pick, rebase, revert}
+\section{cherry-pick, revert, rebase}
 \label{other_ops}
 
 You have already seen what {\bf merge conflicts} (the ones that come about when we are merging branches) look like.
 There are 3 other operations that can produce conflicts:
 
 \begin{itemize}
-	\item {\bf git cherry-pick}
-	\item {\bf git rebase }
-	\item {\bf git revert}
+	\item \hyperref[cherry_pick]{git cherry-pick}
+	\item \hyperref[revert]{git revert}
+	\item \hyperref[rebase]{git rebase}
 \end{itemize}
 
 Even though the basics are the same, each one of the sections of the {\bf CB} has a different {\bf meaning}
 \footnote{In terms of where the code is coming {\bf from}} from what they were during a merge.
 
-\subsection{Example 12 - cherry-pick}
+\subsection{cherry-pick - Example 12}
+\label{cherry_pick}
 \label{example_12}
 
 In git 2.27, this change was introduced:
@@ -222,7 +223,8 @@ I know I would.... for the first 30 seconds after I modified the code, but I don
 And I'm sure it's extremely unlikey anyone else will keep this in mind. All in all: You better stick to {\bf the original intent}.
 You have been forewarned.
 
-\subsection{Example 13 - revert}
+\subsection{revert - Example 13}
+\label{revert}
 \label{example_13}
 
 When you want to {\it take back} the changes introduced by a revision, the operation you have to apply is {\bf revert}
@@ -420,7 +422,8 @@ to get with the {\it reversion}.
 Just so that you can see that the same rules apply when analyzing a reversion, try solving the conflict working from {\bf LB}
 and bring over the changes introduced in {\bf dMU}. You should end up with the same code.
 
-\subsection{Example 14 - rebase}
+\subsection{rebase - Example 14}
+\label{rebase}
 \label{example_14}
 
 Let's play a little bit. From \hyperref[git_repo]{git repo}, checkout revision {\bf ce9baf234f}. Let's take a look at a
