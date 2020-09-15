@@ -3,8 +3,11 @@
 
 \documentclass{report}
 
-\title{Conflictos en código \\
-	\large ... y como manejarlos}
+\input{version}
+\title{Merge conflicts \\
+	\large ... y como manejarlos
+
+	\small version \versionnumber}
 \author{Edmundo Carmona Antoranz}
 \date{\today}
 
@@ -81,7 +84,7 @@
 \subfile{00_in_memoriam}
 \clearpage
 
-\chapter{Lo Básico}
+\chapter{Lo básico}
 \subfile{01_01_what_is_a_conflict}
 \clearpage
 
@@ -107,6 +110,10 @@
 
 \chapter{Qué sucede dentro de git?}
 \subfile{02_what_goes_on}
+\clearpage
+
+\chapter{Lo no tan básico}
+\subfile{03_01_api_conflicts}
 \clearpage
 
 Mucho más contenido viene en camino.

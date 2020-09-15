@@ -1,0 +1,449 @@
+% copyright 2020 Edmundo Carmona Antoranz
+% Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
+
+\section{Conflictos de API}
+
+Antes de explicar los detalles de los que se tienen que cuidar cuando trabajen con {\bf conflictos de API}, consideremos lo que los
+{\bf Cambios de API} significan al hacer {\bf merges} {\it sin} conflictos.
+
+\subsection{Ejemplo 15}
+\label{example_15}
+
+Déjanme mostrarles el ancestro común:
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	caption={\bf Ejemplo 15} - ancestro común]
+#!/usr/bin/python
+
+import sys
+
+colors = {"black": "black mirror",
+          "white": "white noise",
+          "blue": "blue sky"}
+
+def getPhrase(color):
+    color = color.lower()
+    if color not in colors:
+        sys.stderr.write("There is no phrase defined for color %s\n" % color)
+        sys.exit(1)
+    phrase = colors[color]
+    phrase = "%s: %s" % (color, phrase)
+    return phrase
+
+for color in sys.argv[1:]:
+    print(getPhrase(color))
+\end{lstlisting}
+
+Vamos a imprimir las frases para múltiples colores, no solo uno.
+
+Sobre {\bf branchA} la API es cambiaba para que el {\bf color original} se incluya {\it opcionalmente} en la frase:
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	caption={\bf Ejemplo 15} - {\bf branchA}]
+#!/usr/bin/python
+
+import sys
+
+colors = {"black": "black mirror",
+          "white": "white noise",
+          "blue": "blue sky"}
+
+def getPhrase(color, includeColor):
+    color = color.lower()
+    if color not in colors:
+        sys.stderr.write("There is no phrase defined for color %s\n" % color)
+        sys.exit(1)
+    phrase = colors[color]
+    if (includeColor):
+        phrase = "%s: %s" % (color, phrase)
+    return phrase
+
+for color in sys.argv[1:]:
+    print(getPhrase(color, True))
+\end{lstlisting}
+
+En el mundo real, este cambio probablemente no tenga ninún sentido pero está bien. Tengan paciencia y dejen que siga con el problema
+para los efectos de explicación. Miremos la rama {\bf branchB}:
+
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	caption={\bf Ejemplo 15} - {\bf branchB}]
+#!/usr/bin/python
+
+import sys
+
+colors = {"black": "black mirror",
+          "white": "white noise",
+          "blue": "blue sky"}
+
+def getPhrase(color):
+    color = color.lower()
+    if color not in colors:
+        sys.stderr.write("There is no phrase defined for color %s\n" % color)
+        sys.exit(1)
+    phrase = colors[color]
+    phrase = "%s: %s" % (color, phrase)
+    return phrase
+
+# I love color white
+print(getPhrase("white"))
+for color in sys.argv[1:]:
+    print(getPhrase(color))
+\end{lstlisting}
+
+Ahora la frase del color blanco siempre se va a imprimir antes que todos los colores usados como parámetros. Qué sucederá si tratamos
+de hacer {\bf merge}? Qué piensan?
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption={\bf Ejemplo 15} - {\bf git merge}]
+$ git merge example15/branchB --no-edit
+Auto-merging example.py
+Merge made by the 'recursive' strategy.
+ example.py | 2 ++
+ 1 file changed, 2 insertions(+)
+\end{lstlisting}
+
+Excelente! Y el resultado final?
+
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	caption={\bf Ejemplo 15} - resultado final]
+#!/usr/bin/python
+
+import sys
+
+colors = {"black": "black mirror",
+          "white": "white noise",
+          "blue": "blue sky"}
+
+def getPhrase(color, includeColor):
+    color = color.lower()
+    if color not in colors:
+        sys.stderr.write("There is no phrase defined for color %s\n" % color)
+        sys.exit(1)
+    phrase = colors[color]
+    if (includeColor):
+        phrase = "%s: %s" % (color, phrase)
+    return phrase
+
+# I love color white
+print(getPhrase("white"))
+for color in sys.argv[1:]:
+    print(getPhrase(color, True))
+\end{lstlisting}
+
+Ustedes pueden ver el problema, cierto? Dejen que les muestra si es que no lo han visto aún:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption={\bf Ejemplo 15} - tenemos un problema]
+$ ./example.py blue
+Traceback (most recent call last):
+  File "./example.py", line 20, in <module>
+    print(getPhrase("white"))
+TypeError: getPhrase() takes exactly 2 arguments (1 given)
+\end{lstlisting}
+
+Ah, esta línea, agregada en la {\bf branchB}, no ha sido actualizada a la nueva {\bf API } que viene de {\bf branchA}:
+
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	firstnumber=19,
+	caption={\bf Ejemplo 15} - este es el problema]
+# I love color white
+print(getPhrase("white"))
+\end{lstlisting}
+
+Y eso es porque, cuando la API fue cambiada en la rama {\bf branchA}, {\it las llamadas preexistentes sobre la rama } fueron ajustadas....
+pero las llamadas que fueron {\it agregadas added en la otra rama} no van a recibir un ajuste mágicamente al hacer el {\bf merge}.
+Incluso si no hay conflictos, los {\bf cambios de API pueden ser engañosos} al hacer {\bf merges}.
+
+\subsection{Ejemplo 16}
+\label{example_16}
+
+Ahora bien, que pasará cuando hay {\bf cambios conflictivos en la API}? Es la misma situación que acabamos de ver,
+pero en esterides porque se tiene que considerar las modificaciones de todas las ramas involucradas, no de una sola.
+
+Miremos otro ejemplo {\it basado} en el ejemplo que acabamos de usar. Aquí está el archivo completo:
+
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	caption={\bf Ejemplo 16} - todo el archivo]
+#!/usr/bin/python
+
+import sys
+
+RESET=chr(0x1b) + "[m"
+colors = {"black": {"phrase": "black mirror", "fg": chr(0x1b) + "[0;7m"}, # reverse on color
+          "white": {"phrase": "white noise", "fg": chr(0x1b) + "[1m"},
+          "blue": {"phrase": "blue sky", "fg": chr(0x1b) + "[1;34m"}}
+
+<<<<<<< HEAD
+def getPhrase(color, showColor):
+||||||| 46e6753
+def getPhrase(color):
+=======
+def getPhrase(color, useColor):
+>>>>>>> example16/branchB
+    """
+    Get the phrase that corresponds to one color
+    
+    Parameters
+    ----------
+    color: color to get the phrase for. It can be used in any combination of uppercase/lowercase letters
+<<<<<<< HEAD
+    showColor: whether to display the original color name before the phrase or not
+||||||| 46e6753
+=======
+    useColor: we can change the color of the phrase when writing on the output
+>>>>>>> example16/branchB
+    """
+    color = color.lower()
+    if color not in colors:
+        sys.stderr.write("There is no phrase defined for color %s\n" % color)
+        sys.exit(1)
+<<<<<<< HEAD
+    phrase = colors[color]
+    if showColor:
+        phrase = "%s: %s" % (color, phrase)
+||||||| 46e6753
+    phrase = colors[color]
+    phrase = "%s: %s" % (color, phrase)
+=======
+    phrase = colors[color]["phrase"]
+    phrase = "%s: %s" % (color, phrase)
+    if useColor:
+        phrase = colors[color]["fg"] + phrase + RESET
+>>>>>>> example16/branchB
+    return phrase
+
+for color in sys.argv[1:]:
+    print(getPhrase(color, True))
+\end{lstlisting}
+
+Cada rama agregó un método a {\bf getPhrase()}... y el nombre puede prestarse a confusión, cierto? Son el mismo parámetro (misma
+{\it intención}) con nombres diferentes? Ese sería {\bf} otro nivel de dificultad adicional que habría que manejar. Afortuadamente,
+tenemos {\bf docstrings} para la función y en el segundo {\bf CB} podemos ver qué hace el parámetro de cada rama. Podemos concluir
+que no son lo mismo:
+
+\begin{lstlisting}[style=python_style,
+	firstnumber=17,
+	basicstyle=\small,
+	caption={\bf Ejemplo 16} - {\bf CB\#2}]
+    """
+    Get the phrase that corresponds to one color
+    
+    Parameters
+    ----------
+    color: color to get the phrase for. It can be used in any combination of uppercase/lowercase letters
+<<<<<<< HEAD
+    showColor: whether to display the original color name before the phrase or not
+||||||| 46e6753
+=======
+    useColor: we can change the color of the phrase when writing on the output
+>>>>>>> example16/branchB
+    """
+\end{lstlisting}
+
+El parámetro de {\bf UB}, {\bf showColor}, se usa para indicar si el color original va a ser antepuesto a frase a ser impresa. El
+parámetro de {\bf LB}, {\bf useColor}, se usa para cambiar el color del texto en el terminal como un efecto visual. Por lo tanto, como
+es habitual, tenemos que mantener la {\bf intención} de ambas ramas. En el primer {\bf CB}, cual parámetro irá primero?
+Desde mi punto de vista, cualquiera de los dos estará bien pero podría haber ciertas reglas que seguir.... cada situación es diferente.
+Esta será mi resolución para los dos primeros conflictos de un solo golpe:
+
+\begin{lstlisting}[style=python_style,
+	firstnumber=10,
+	basicstyle=\small,
+	caption={\bf EJemplo 16} - solución a los primeros 2 {\bf CB}s]
+def getPhrase(color, showColor, colorOnOutput):
+    """
+    Get the phrase that corresponds to one color
+    
+    Parameters
+    ----------
+    color: color to get the phrase for. It can be used in any combination of uppercase/lowercase letters
+    showColor: whether to display the original color name before the phrase or not
+    colorOnOutput: we can change the color of the phrase when writing on the output
+    """
+\end{lstlisting}
+
+Cambié el nombre del parámetro que viene de {\bf la otra rama} para que la diferencia entre ellos sea más avidente. Eso significa que
+{\it también} tendré que modificar los lugares donde se use {\bf useColor} (el nombre original del prámetro) en la función.
+Veamos el siguiente {\bf CB} comenzando en la línea 24\footnote{Línea 24 {\bf luego} de resolver los 2 conflictos previos}:
+
+\begin{lstlisting}[style=python_style,
+	firstnumber=24,
+	basicstyle=\small,
+	caption={\bf Ejemplo 16} - {\bf CB\#3}]
+<<<<<<< HEAD
+    phrase = colors[color]
+    if showColor:
+        phrase = "%s: %s" % (color, phrase)
+||||||| 46e6753
+    phrase = colors[color]
+    phrase = "%s: %s" % (color, phrase)
+=======
+    phrase = colors[color]["phrase"]
+    phrase = "%s: %s" % (color, phrase)
+    if useColor:
+        phrase = colors[color]["fg"] + phrase + RESET
+>>>>>>> example16/branchB
+\end{lstlisting}
+
+\subsubsection{dMU}
+Se agregó un condicional en la línea 26 para controlar si de usará el color original en la frase.
+
+\subsubsection{dML}
+Se modificó la forma en la que se obtiene la frase asociada al color porque la estructura de diccionario cambió (línea 32)
+y se agregó un condicional en la línea 34 para modificar la frase para que el color del texto en el terminal cambie.
+
+\subsubsection{Resolution}
+Dado que el {\bf LB} es más diferente al {\bf MB} que el {\bf UB}, trabajaremos desde el {\bf LB}.
+
+\begin{lstlisting}[style=python_style,
+	firstnumber=31,
+	basicstyle=\small,
+	caption={\bf Ejemplo 16} - Paso 1 - {\bf LB\#3}]
+=======
+    phrase = colors[color]["phrase"]
+    phrase = "%s: %s" % (color, phrase)
+    if useColor:
+        phrase = colors[color]["fg"] + phrase + RESET
+>>>>>>> example16/branchB
+\end{lstlisting}
+
+Luego todo lo que tenemos que hacer es agregar el condicional para incluir el color original y ajustar indentación:
+
+\begin{lstlisting}[style=python_style,
+	firstnumber=31,
+	basicstyle=\small,
+	caption={\bf Ejemplo 16} - Paso 2 - {\bf LB\#3}]
+=======
+    phrase = colors[color]["phrase"]
+    if showColor:
+        phrase = "%s: %s" % (color, phrase)
+    if useColor:
+        phrase = colors[color]["fg"] + phrase + RESET
+>>>>>>> example16/branchB
+\end{lstlisting}
+
+Y listo, cierto? {\bf Los pillé!!!} Recuerdan que hay que ajustar el nombre del parámetro Did que viene de {\bf la otra rama}?
+Lo cambié de {\bf useColor} a {\bf colorOnOutput} mientras se resolvían los {\bf CB}s 1 y 2, así que debemos ajustar eso
+en este {\bf CB}:
+
+\begin{lstlisting}[style=python_style,
+	firstnumber=31,
+	basicstyle=\small,
+	caption={\bf Ejemplo 16} - Paso 3 - {\bf LB\#3}]
+=======
+    phrase = colors[color]["phrase"]
+    if showColor:
+        phrase = "%s: %s" % (color, phrase)
+    if colorOnOutput:
+        phrase = colors[color]["fg"] + phrase + RESET
+>>>>>>> example16/branchB
+\end{lstlisting}
+
+Y así, el resultado final sería este:
+
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	caption={\bf Ejemplo 16} - conflictos resueltos]
+#!/usr/bin/python
+
+import sys
+
+RESET=chr(0x1b) + "[m"
+colors = {"black": {"phrase": "black mirror", "fg": chr(0x1b) + "[0;7m"}, # reverse on color
+          "white": {"phrase": "white noise", "fg": chr(0x1b) + "[1m"},
+          "blue": {"phrase": "blue sky", "fg": chr(0x1b) + "[1;34m"}}
+
+def getPhrase(color, showColor, colorOnOutput):
+    """
+    Get the phrase that corresponds to one color
+    
+    Parameters
+    ----------
+    color: color to get the phrase for. It can be used in any combination of uppercase/lowercase letters
+    showColor: whether to display the original color name before the phrase or not
+    colorOnOutput: we can change the color of the phrase when writing on the output
+    """
+    color = color.lower()
+    if color not in colors:
+        sys.stderr.write("There is no phrase defined for color %s\n" % color)
+        sys.exit(1)
+    phrase = colors[color]["phrase"]
+    if showColor:
+        phrase = "%s: %s" % (color, phrase)
+    if colorOnOutput:
+        phrase = colors[color]["fg"] + phrase + RESET
+    return phrase
+
+for color in sys.argv[1:]:
+    print(getPhrase(color, True))
+\end{lstlisting}
+
+Y ya estamos listos, cierto? {\bf Pillados de nuevo!!!} Se fijaron en la llamada de la línea 32?
+
+\begin{lstlisting}[style=python_style,
+	firstnumber=31,
+	basicstyle=\small,
+	caption={\bf Ejemplo 16} - llamada que debe ser ajustada]
+for color in sys.argv[1:]:
+    print(getPhrase(color, True))
+\end{lstlisting}
+
+Solo tiene 2 parámetros.... pero deberían ser 3, cierti? Por qué pasó esto? Ah, este es uno de esos casos en los que la
+{\bf inteligencia} de git se pone en nuestra contra. Si git nota que 2 ramas aplican el mismo cambio, simplemente lo toma
+de una de las ramas {\it tal cual} y no genera conflicto. En este caso ambas ramas agregaron el segundo paámetro con el valor
+{\bf True} en ambas, así que es el mismo cambio viniendo desde ambas ranas. Pero debemos ajustar la llamada para que ambos parámetros
+nuevos sean {\bf True} y entonces quedará resuelto. Este es el resultado recontrafinal del conflicto
+\footnote{Ahora si, en serio... lo prometo!}:
+
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	caption={\bf Ejemplo 16} - Conflicto resuelto {\bf de verdad}]
+#!/usr/bin/python
+
+import sys
+
+RESET=chr(0x1b) + "[m"
+colors = {"black": {"phrase": "black mirror", "fg": chr(0x1b) + "[0;7m"}, # reverse on color
+          "white": {"phrase": "white noise", "fg": chr(0x1b) + "[1m"},
+          "blue": {"phrase": "blue sky", "fg": chr(0x1b) + "[1;34m"}}
+
+def getPhrase(color, showColor, colorOnOutput):
+    """
+    Get the phrase that corresponds to one color
+    
+    Parameters
+    ----------
+    color: color to get the phrase for. It can be used in any combination of uppercase/lowercase letters
+    showColor: whether to display the original color name before the phrase or not
+    colorOnOutput: we can change the color of the phrase when writing on the output
+    """
+    color = color.lower()
+    if color not in colors:
+        sys.stderr.write("There is no phrase defined for color %s\n" % color)
+        sys.exit(1)
+    phrase = colors[color]["phrase"]
+    if showColor:
+        phrase = "%s: %s" % (color, phrase)
+    if colorOnOutput:
+        phrase = colors[color]["fg"] + phrase + RESET
+    return phrase
+
+for color in sys.argv[1:]:
+    print(getPhrase(color, True, True))
+\end{lstlisting}
+
+Eso fue algo de trabajo, cierto?
+
+\subsection{Ejercicios}
+
+\subsubsection{Exercise 7}
+
+De el \hyperref[git_repo]{git repo}, hagen checkout de la revisión {\bf 4284497396} and hagan merge de {\bf cdb5330a9b}\footnote{estos son
+los padres de la revisión {\bf dcd6a8c09a}}. Resuelvan todos los conflictos. La solución está \hyperref[exercise_07]{aquí}.
+
