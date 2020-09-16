@@ -489,10 +489,10 @@ int diff_no_index(struct repository *, struct rev_info *,
 Looks very straight forward:
 
 \subsubsection*{dMU}
-Removed {\bf struct repository *} as an argument to {\bf diff\_no\_index} call.
+Removed {\bf struct repository *} as an argument to function {\bf diff\_no\_index}.
 
 \subsubsection*{dML}
-Added (or rather, {\it inserted}) {\bf int implicit\_no\_index} as an argument to {\bf diff\_no\_index} call.
+Added (or rather, {\it inserted}) {\bf int implicit\_no\_index} as an argument to function {\bf diff\_no\_index}.
 
 \subsubsection*{Resolution}
 Given that it is much simpler to {\bf delete} things than moving things around, we will work from {\bf LB}.
@@ -535,7 +535,7 @@ Notice how I repositioned the arguments to match a more {\it git-project standar
 This of course means that all existing calls to {\bf diff\_no\_index} will be broken. It's likely that there will
 be some conflicting ones, but we already know that there might be some that might get away with it that we will
 have to hunt down.\footnote{Given that this is a c project, it's not like those broken calls that didn't get a conflict
-will make it alive. If we avoid them for any reason, when we compile the project they will burst in flames. Working on
+will make it alive. If we avoid them for any reason, when we compile the project they will burst into flames. Working on
 python? Well, you might have to sit down to {\bf really} find them.}
 
 \subsection*{CB in builtin/diff.c}
@@ -734,8 +734,8 @@ $ git blame -s -L 383,391 -- builtin/diff.c
 
 And this is precisely one of the spots where we have to consider the API change. Remember the function
 we had to adjust? {\bf diff\_no\_index}. Exactly what we have in line {\bf 385}. You can see that in the patch where the
-call is moved, it originally had {\bf the\_repository} as one argument and in the final position that paraneter is {\it gone},
-so that part of our original {\bf API conflict} is done. Coming back the {\bf deleted code analysis}, it seems like we
+call is moved, it originally had {\bf the\_repository} as one argument and in the final position that parameter is {\it gone},
+so that part of our original {\bf API conflict} is done. Coming back to the {\bf deleted code analysis}, it seems like we
 can safely assume that all adjustments have been taken care of properly. Now let's check the deleted code on {\bf the other
 branch}.
 
@@ -886,7 +886,7 @@ Removed {\bf struct repository *r} as an argument to {\bf diff\_no\_index}.
 
 \subsubsection*{dML}
 Added the definition of {\bf diff\_no\_index\_usage} and also {\it inserted} {\bf implicit\_no\_index} as an argument to
-the {\bf diff\_no\_index} call.
+the function {\bf diff\_no\_index}.
 
 \subsubsection*{Resolution}
 It's more than obvious we need to work from {\bf LB}, right?
@@ -945,7 +945,7 @@ int diff_no_index(struct rev_info *revs,
 	const char *paths[2];
 \end{lstlisting}
 
-Can you take care of solving the remaning conflicts in the project? Here's what has to be done, once you are done:
+Can you take care of solving the remaning conflicts in the project? Here's what has to be done, so you can check once you are finished:
 
 \subsection*{CB\#2 in diff-no-index.c}
 \begin{lstlisting}[style=c_style,
@@ -967,8 +967,8 @@ Can you take care of solving the remaning conflicts in the project? Here's what 
 	for (i = 0; i < 2; i++) {
 \end{lstlisting}
 
-No more need for the call to {\bf repo\_diff\_setup} because {\bf r} (the repository) is no longer a part of the
-parameters of the function we are working on.
+No more need for the call to {\bf repo\_diff\_setup} because it is removed in one of the branches and, just in case,
+{\bf r} (the repository) is no longer a part of the parameters of the function we are working on.
 
 \subsection*{CB in diff.c}
 
@@ -990,7 +990,7 @@ We keep {\bf LB} {\it as is} because the new definition to handle {\bf color-mov
 also take care of {\bf --no-color-moved-ws}.
 
 \subsubsection{What's missing?}
-Last step would be checkout for any calls to the conflicted function:
+Last step would be checkout for any other calls to the conflicted function:
 
 \begin{lstlisting}[style=console_style,
 	caption={\bf Exercise 7} - calls to {\bf diff\_no\_index}]
@@ -1000,7 +1000,7 @@ diff-no-index.c:242:int diff_no_index(struct rev_info *revs,
 diff.h:443:int diff_no_index(struct rev_info *, int implicit_no_index, int,
 \end{lstlisting}
 
-And it's all related to the code that we worked on while working on the conflict so we are all good.
+And it's all related to the code that we worked on while working on the conflicts so we are all good.
 
 Finally, if you compare with {\bf dcd6a8c09a}, you should get no meaningful differences.
 

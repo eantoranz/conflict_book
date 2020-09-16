@@ -162,8 +162,6 @@ calls that were {\it added on the other branch} won't magically get those adjust
 \subsection{Example 16}
 \label{example_16}
 
-Considerar usar f4ed0af6e2 como ejemplo.
-
 Now, what will happen when you have {\bf conflicting changes on the API}? It's the same situation we just saw, but on steroids
 because you will have to consider code that is modified from all the branches that are being merged, not just one.
 
@@ -248,8 +246,8 @@ conclude that they are definitely not the same:
     """
 \end{lstlisting}
 
-The one for in {\bf UB}, {\bf showColor}, is used to tell if the original color will be printed before the phrase. The one in {\bf LB},
-{\bf useColor}, is used to change text color on the output for an addeed visual effect, and as usual, we need to keep both {\bf intents}.
+The one in {\bf UB}, {\bf showColor}, is used to tell if the original color will be printed before the phrase. The one in {\bf LB},
+{\bf useColor}, is used to change text color on the output for an added visual effect, and as usual, we need to keep both {\bf intents}.
 On the first {\bf CB}, what parameter will we add first? From my point of view, either one is fine but you might have rules to follow
 for that... every situation is different. I will do this to solve the first two conflicts in a single shot:
 
@@ -296,7 +294,7 @@ the function. Let's take a look at the next {\bf CB} starting on line 24\footnot
 Added a conditional in line 26 to control if we will include the original color name on the phrase.
 
 \subsubsection{dML}
-Modified the way we get the phase associated to the color because the dictionary structure has changed (line 32) and added a
+Modified the way we get the phrase associated to the color because the dictionary structure has changed (line 32) and added a
 conditional on line 34 to modify the phrase so that the output color on the terminal is changed.
 
 \subsubsection{Resolution}
@@ -314,7 +312,7 @@ Given that {\bf LB} is more different from {\bf MB} than {\bf UB}, I will work f
 >>>>>>> example16/branchB
 \end{lstlisting}
 
-Then all we need to do is add the conditional to include the original color and adjust indentation:
+Then that is needed to be done is add the conditional to include the original color and adjust indentation:
 
 \begin{lstlisting}[style=python_style,
 	firstnumber=31,
@@ -394,7 +392,7 @@ for color in sys.argv[1:]:
     print(getPhrase(color, True))
 \end{lstlisting}
 
-It has only 2 parameters... but we should have 3, right? Why is that? Oh, it's one on those cases where git's {\it smartness} is playing
+It has only 2 parameters... but we should have 3, right? Why is that? Oh, it's one of those cases where git's {\it smartness} is playing
 against us. If git notices that both branches applied the same change, it just takes it in {\bf as is} from one of the branches and
 generates no conflict. In this case both branches added the second parameter and the value is {\bf True} for both branches, so it's
 the same change coming from both branches. But we need to adjust it so that both parameters get a {\bf True} value and then it will
