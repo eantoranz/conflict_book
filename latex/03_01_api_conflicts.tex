@@ -246,7 +246,7 @@ que no son lo mismo:
     """
 \end{lstlisting}
 
-El parámetro de {\bf UB}, {\bf showColor}, se usa para indicar si el color original va a ser antepuesto a frase a ser impresa. El
+El parámetro de {\bf UB}, {\bf showColor}, se usa para indicar si el color original va a ser antepuesto a la frase a ser impresa. El
 parámetro de {\bf LB}, {\bf useColor}, se usa para cambiar el color del texto en el terminal como un efecto visual. Por lo tanto, como
 es habitual, tenemos que mantener la {\bf intención} de ambas ramas. En el primer {\bf CB}, cual parámetro irá primero?
 Desde mi punto de vista, cualquiera de los dos estará bien pero podría haber ciertas reglas que seguir.... cada situación es diferente.
@@ -255,7 +255,7 @@ Esta será mi resolución para los dos primeros conflictos de un solo golpe:
 \begin{lstlisting}[style=python_style,
 	firstnumber=10,
 	basicstyle=\small,
-	caption={\bf EJemplo 16} - solución a los primeros 2 {\bf CB}s]
+	caption={\bf Ejemplo 16} - solución a los primeros 2 {\bf CB}s]
 def getPhrase(color, showColor, colorOnOutput):
     """
     Get the phrase that corresponds to one color
@@ -394,10 +394,10 @@ for color in sys.argv[1:]:
     print(getPhrase(color, True))
 \end{lstlisting}
 
-Solo tiene 2 parámetros.... pero deberían ser 3, cierti? Por qué pasó esto? Ah, este es uno de esos casos en los que la
+Solo tiene 2 parámetros.... pero deberían ser 3, cierto? Por qué pasó esto? Ah, este es uno de esos casos en los que la
 {\bf inteligencia} de git se pone en nuestra contra. Si git nota que 2 ramas aplican el mismo cambio, simplemente lo toma
 de una de las ramas {\it tal cual} y no genera conflicto. En este caso ambas ramas agregaron el segundo paámetro con el valor
-{\bf True} en ambas, así que es el mismo cambio viniendo desde ambas ranas. Pero debemos ajustar la llamada para que ambos parámetros
+{\bf True} en ambas, así que es el mismo cambio viniendo desde ambas ramas. Pero debemos ajustar la llamada para que ambos parámetros
 nuevos sean {\bf True} y entonces quedará resuelto. Este es el resultado recontrafinal del conflicto
 \footnote{Ahora si, en serio... lo prometo!}:
 

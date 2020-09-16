@@ -731,9 +731,9 @@ $ git blame -s -L 383,391 -- builtin/diff.c
 287ab28bfae 391)        rev.diffopt.skip_stat_unmatch = !!diff_auto_refresh_index;
 \end{lstlisting}
 
-Y este es precisamente uno de los sitios donde debemos considerer el cambio de API. Recuerdan la función que debimos ajustar?
-{\bf diff\_no\_index}. Exactamente lo que tenemos en la línea {\bf 385}. podemos ver que en el parche donde se mueve la llamada, originalmente
-tenía el parámetro {\bf the\_repository} pero en la posición final el parámetro ha sido removido, así qye esa parte de nuestro {\bf conflicto
+Y este es precisamente uno de los sitios donde debemos considerar el cambio de API. Recuerdan la función que debimos ajustar?
+{\bf diff\_no\_index}. Exactamente lo que tenemos en la línea {\bf 385}. Podemos ver que en el parche donde se mueve la llamada, originalmente
+tenía el parámetro {\bf the\_repository} pero en la posición final el parámetro ha sido removido, así que esa parte de nuestro {\bf conflicto
 de API} ya fue resuelto.
 
 Veamos el código borrado de {\bf la otra rama}.
@@ -965,8 +965,8 @@ Podrían encargarse de resolver los otros conflictos en el proyecto? Esto es lo 
 	for (i = 0; i < 2; i++) {
 \end{lstlisting}
 
-No se necesita la llamada a {\bf repo\_diff\_setup} porque {\bf r} (el repositotio) ya no es parte de los parámetros
-de la función sobre la que estamos trabajando.
+No se necesita la llamada a {\bf repo\_diff\_setup} porque fue borrada en una de las ramas y, por si acaso, {\bf r} (el repositotio)
+ya no es parte de los parámetros de la función sobre la que estamos trabajando.
 
 \subsection*{CB en diff.c}
 
@@ -998,7 +998,7 @@ diff-no-index.c:242:int diff_no_index(struct rev_info *revs,
 diff.h:443:int diff_no_index(struct rev_info *, int implicit_no_index, int,
 \end{lstlisting}
 
-Y todas se relacionan con código que ya trabajamos en el que estamos así que todo esta bien.
+Y todas se relacionan con código que ya trabajamos resolviendo los conflictos así que todo esta bien.
 
 Finalmente, si comparan con {\bf dcd6a8c09a}, no deberían obtener ninguna diferencia significativa.
 

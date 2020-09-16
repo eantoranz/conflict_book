@@ -1,22 +1,23 @@
 % copyright 2020 Edmundo Carmona Antoranz
 % Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
 
-\section{cherry-pick, rebase, revert}
+\section{cherry-pick, revert, rebase}
 \label{other_ops}
 
 Ya han visto como son los {\bf merge conflicts}, los que aparecen cuando se hace una operación de mezcla.
 Hay otras 3 operaciones que pueden generar conflictos:
 
 \begin{itemize}
-	\item {\bf git cherry-pick}
-	\item {\bf git rebase }
-	\item {\bf git revert}
+	\item \hyperref[cherry_pick]{git cherry-pick}
+	\item \hyperref[revert]{git revert}
+	\item \hyperref[rebase]{git rebase}
 \end{itemize}
 
 Aunque la mecánica básica es la misma, cada sección del {\bf CB} tiene un {\bf significado} diferente
 \footnote{En relación a de donde viene el código que está en cada sección del {\bf CB}}
 
-\subsection{Example 12 - cherry-pick}
+\subsection{cherry-pick - Ejemplo 12}
+\label{cherry_pick}
 \label{example_12}
 
 En git 2.27, se introdujo este cambio:
@@ -225,7 +226,8 @@ para que logren detectar estas situaciones para arreglar el código? Yo se que s
 difícil que todos logremos recordar todos estos detalles. Conclusión: Apéguense a la {\bf intención original} del parche.
 Considérense advertidos.
 
-\subsection{Ejemplo 13 - revert}
+\subsection{revert - Ejemplo 13}
+\label{revert}
 \label{example_13}
 
 Cuando se quiere revertir cambios que fueron introducidos por una revisión, la operación que se aplica es {\bf revert}
@@ -422,7 +424,8 @@ queríamos para lograr la reversión.
 Sólo para que vean que las mismas reglas aplican para hacer el {\bf revert}, intenten hacer la resolución del conflicto pero
 trabajando desde el {\bf LB} y aplicando los cambios del {\bf dMU}. Deben terminar con exactamente el mismo código.
 
-\subsection{Ejemplo 14 - rebase}
+\subsection{rebase - Ejemplo 14}
+\label{rebase}
 \label{example_14}
 
 Juguemos un poco. Del \hyperref[git_repo]{repo de git}, hagan checkout de la revisión {\bf ce9baf234f}. Veamos una sección
