@@ -197,7 +197,6 @@ git log --reverse --pretty=%h $start_rev..$end_rev |  while read revision; do
 	git cherry-pick $revision &> /dev/null
 	cherry_pick_result=$?
 	# there is a conflict, means there is a problem with the EOL formats at some file
-	# TODO correct EOL format of the files
 	for i in $( seq 0 $(( $total_files - 1 )) ); do
 		file=${files[$i]}
 		format=${formats[$i]}

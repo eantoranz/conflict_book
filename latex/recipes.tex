@@ -1,0 +1,22 @@
+% copyright 2020 Edmundo Carmona Antoranz
+% Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
+
+\section{Correct EOL-format history change}
+\label{correct_eol_history}
+
+As part of the files that make up this book, there must be a script called {\bf correct\_eol.sh}. This script assumes
+you need to correct the {\bf EOL-format} of a set of files on a straight branch, in other words, a branch that has no merges, only revisions
+one after the other.
+
+When calling the script you need to provide:
+\begin{itemize}
+	\item the last revision where the format of the files is {\bf correct}
+	\item the branch or tip revision whose history we need to correct
+	\item the list of files that has to be adjusted
+\end{itemize}
+
+The script will basically rewrite history of the branch (starting on the last revision with the correct {\bf EOL-format})
+making sure to use the original {\bf EOL-format} on each one of the files that were provided as arguments on each one of
+the subsequent revisions.
+
+Link to the file: \href{https://github.com/eantoranz/conflict_book/blob/main/scripts/correct_eol.sh}{correct\_eol.sh}
