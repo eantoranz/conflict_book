@@ -1,0 +1,22 @@
+% copyright 2020 Edmundo Carmona Antoranz
+% Released under the terms of Creative Commons Attribution-ShareAlike 4.0 International Public License
+
+\section{Corregir cambio de formato de EOL}
+\label{correct_eol_history}
+
+Como parte de los archivos que conforman este libro, debe haber un script llamado {\bf correct\_eol.sh}. Este script asume
+que tienen que corregir el formato de {\bf EOL} de un grupo de archivos sobre una rama recta, es decir, una rama que no tenga {\bf merges},
+solo revisiones una después de la otra.
+
+Cuando llamen al script tienen que proveer lo siguiente:
+
+\begin{itemize}
+	\item La última revisión donde los archivos tenían el formato {\bf corecto}
+	\item La rama o revisión cuya historia queremos corregir
+	\item La lista de archivos que deben recibir correcciones de formato
+\end{itemize}
+
+El script básicamente reescribirá la historia de la rama (comenzando con la última revisión que tiene el formato correcto)
+asegurándose de que los archivos tengan el formato de {\bf EOL} original en cada revisión subsecuente.
+
+Enlace al archivo: \href{https://github.com/eantoranz/conflict_book/blob/main/scripts/correct_eol.sh}{correct\_eol.sh}
