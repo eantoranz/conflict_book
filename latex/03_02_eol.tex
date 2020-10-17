@@ -155,7 +155,7 @@ there are some rather simple possibilities for this to come up:
 	in the first place}, right? Therefore, when you save the file (if you fail to realize what happened when you opened the file and
 	didn't run away from it), all line breaks will be gone. And if you decided to go separating the lines one by one in notepad and
 	save them (Hey! Not all developers are in a rush to do stuff, you know?), then all the lines have been changed to have
-	{\bf CRLN} line breaks instead of the original {\bf LFs}. And if this criticism is not true {\it anymore} because a new Microsoft
+	{\bf CRLF} line breaks instead of the original {\bf LFs}. And if this criticism is not true {\it anymore} because a new Microsoft
 	Notepad has come out that supports different EOL formats, then let me say {\it “Great!”} Too bad it is coming some 30+ years too
 	late. So I stand behind my criticism.}
 	And I bet there are other editors out there that don't keep the original EOL format {\bf at all}. Either way, this should have been
@@ -185,7 +185,7 @@ Ok, ok... enough theory. Let's consider the different approaches you might follo
 First thing to notice is that this is kind of offsetting the purpose of the merge, right? You would like to get all changes from
 {\bf the other branch} {\it automagically} copied over on your code {\bf and} get conflicts on the pieces that are rightly so.
 Now we are in a situation where we will need to do everything {\bf by hand}. Luckily for us, in this case, we have already seen what is
-required to bring over from {\bf the other branch}. We need to adjust the years covered in the copyright. Sot, this would be the
+required to bring over from {\bf the other branch}. We need to adjust the years covered in the copyright. So, this would be the
 resulting file, the first few lines:
 
 \begin{lstlisting}[style=xml_style,
@@ -340,7 +340,7 @@ And I am kidding you not. As long as there's different EOL-formats between the b
 
 Consider that, in this case, it was a very tiny change that had to be carried over from {\bf the other branch}. What if
 the changes were bigger? Multiple pieces? A few fine changes that should get no conflict and then some conflicting ones?
-Are you willing to sit down to copy stuff all day long? Not the best way to spend your ready-for-tough-merges brain CPU
+Are you willing to sit down to copy stuff all day long? Not the best way to spend your trained-for-tough-merges brain CPU
 cycles, right? Yeah, I thought so.
 
 Given that, in our example, the EOL-format change took place in {\bf our} branch, should we change the {\bf EOL format}
@@ -387,7 +387,7 @@ this new merge revision we just created and let's try to merge again, shall we? 
 
 \begin{lstlisting}[style=console_style,
 	basicstyle=\small,
-	caption={\bf example 17} - changing file]
+	caption={\bf example 17} - checkout {\bf 9d3e0870754}]
 $ git checkout 9d3e0870754
 HEAD is now at 9d3e0870754 Merge
 \end{lstlisting}
@@ -460,7 +460,7 @@ changed {\bf back} the EOL-format to what it was originally, we got a mess just 
 Then how do we get out of this mess? The best approach would be to rewrite history so that the EOL format never happens.
 I know, I know... it's not {\bf recommended as a general principle}, but there are situations where it's worth it. I would
 say this is one of those situations. In the \hyperref[recipes]{recipe's} section I provide a rather-simple way to rewrite history
-of a branch {\it provided that it's straight and has no merges}.
+of a branch {\it provided that it's straight (in other words, it has no merges), since the files had the correct EOL format}.
 
 If rewriting history is not an option then just set the EOL format to the original EOL format on the branch where it is changed
 and deal with the consequences. Unfortunately you are dealing with a situation that shouldn't have happened in the fist place.
