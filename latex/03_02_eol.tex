@@ -470,124 +470,15 @@ Si reescribir la historia no es una opción, entonces ajusten el formato de {\bf
 y carguen con las consecuencias. Desafortunadamente están manejando una situación que no debió suceder en primer lugar. Si un desarrollador
 cambia el formato de {\bf EOL} de un archivo en un PR, eso nunca debió ser aceptado. Debió ser rechazado, el desarrollador debió coregir la
 historia de la rama tal que el cambio de formato nunca sucede (la rama puede ser corregida con muy poco esfuerzo usando la receta, ok?).
+
+\subsection{Ejercicios}
+\subsubsection{Ejercicio 8 - usando el script}
  
-\subsection{Ejemplo 18 - usando el script}
-\label{example18}
+Del \hyperref[exercises_repo]{repo de ejercicios}, hagan checkout de la rama {\bf exercise8/branchA} y hagan merge de {\bf exercise8/branchB}.
+Deberíamos ver un conflicto de archivo completo en {\bf primes.py}.
 
-Del \hyperref[examples_repo]{repo de ejemplos}, hagan checkout de la rama {\bf example18/branchA} y hagan merge de {\bf example18/branchB}.
-Deberíamos ver u conflicto de archivo completo en {\bf primes.py}.
-
-Tratemos de corregir la historia de la rama donde se hizo el cambio de formato de {\bf EOL}. Usemos {\bf unix2dos} como hicimos antes
-para verificar:
-
-\begin{lstlisting}[style=console_style,
-	basicstyle=\small,
-	caption={\bf Ejemplo 18} - formatos de {\bf EOL}]
-$ git show HEAD:primes.py | unix2dos -idum
-       0      21       0
-$ git show MERGE_HEAD:primes.py | unix2dos -idum
-      27       0       0
-$ git show $( git merge-base HEAD MERGE_HEAD ):primes.py | unix2dos -idum
-       0      21       0
-\end{lstlisting}
-
-Y podemos ver como el formato cambió en {\bf MERGE\_HEAD}, también conocida como  {\bf la otra rama}, así que hagamos checkout
-de esa rama y veamos donde se rompió:
-
-\begin{lstlisting}[style=console_style,
-	basicstyle=\small,
-	caption={\bf Ejemplo 18} - averiguando donde se rompió]
-$ git checkout -f example18/branchB
-Switched to branch 'example18/branchB'
-$ git log --stat --pretty=%h primes.py
-491c86b
-
- primes.py | 3 +++
- 1 file changed, 3 insertions(+)
-ea81ba7
-
- primes.py | 45 ++++++++++++++++++++++++---------------------
- 1 file changed, 24 insertions(+), 21 deletions(-)
-55be073
-
- primes.py | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
-\end{lstlisting}
-
-Y podemos ver que el archivo tuvo una modificacióngigante en la revisión {\bf ea81ba7}. Asegurémonos:
-
-\begin{lstlisting}[style=console_style,
-	basicstyle=\small,
-	caption={\bf Ejemplo 18} - asegurándonos]
-$ git show ea81ba7~:primes.py | unix2dos -idum
-       0      21       0
-$ git show ea81ba7:primes.py | unix2dos -idum
-      24       0       0
-\end{lstlisting}
-
-Y ahó lo podemos ver expuesto. En el ancestro de {\bf ea81ba7}, eran saltos de linea NIX y en {\bf ea81ba7} se habían cambiado a DOS.
-
-Utilicemos el script de la receta para coregir la rama. Primero, voy a colocar el script en el arbol de trabajo y luego voy a
-ejecutarlo:
-
-\begin{lstlisting}[style=console_style,
-	basicstyle=\small,
-	caption={\bf Ejemplo 18} - corriendo el script]
-$ ./correct_eol.sh ea81ba7~ example18/branchB primes.py
-correct_eol.sh
-copyright 2020 Edmundo Carmona Antoranz
-Released under the terms of GPLv2
-file: primes.py EOL format: unix
-Checking out starting revision (55be073 Prime number calculation)
-Bringing over revision ea81ba7 (Check only already-known primes as divisors)
-
-Bringing over revision 491c86b (No need to check all divisors)
-
-Finished
-Check the results in the working tree and also the branch history with git log or gitk
-If you like the results, feel free to move the branch over here (for example, with 'git branch -f some-branch')
-\end{lstlisting}
-
-Verifiquemos la historia de las ramas:
-
-\begin{lstlisting}[style=console_style,
-	basicstyle=\small,
-	caption={\bf Ejemplo 18} - mirando la historia]
-$ git log --graph --oneline HEAD example18/branchA example18/branchB
-* fa1aca4 (HEAD) No need to check all divisors
-* 434aec2 Check only already-known primes as divisors
-| * 2be7601 (example18/branchA) Let's go up to 10000
-|/  
-| * 491c86b (example18/branchB) No need to check all divisors
-| * ea81ba7 Check only already-known primes as divisors
-|/  
-* 55be073 Prime number calculation
-\end{lstlisting}
-
-Y podemos ver como {\bf HEAD} y {\bf example18/branchB} tienen historias análogas. Comparemos para verificar que el contenido es
-el mismo:
-
-\begin{lstlisting}[style=console_style,
-	basicstyle=\small,
-	caption={\bf Ejemplo 18} - Comparando resultados]
-$ git diff -w HEAD example18/branchB
-$
-\end{lstlisting}
-
-Exactamente lo que queríamos. Ahora deberíamos mover la rama e intentar hacer el merge de nuevo. Voy a saltarme el paso de mover la rama
-y voy a proceder a hacer la mezcla sobre {\bf HEAD}:
-
-\begin{lstlisting}[style=console_style,
-	basicstyle=\small,
-	caption={\bf Ejemplo 18} - mezclando sobre {\bf HEAD}]
-$ git merge example18/branchA
-Auto-merging primes.py
-Merge made by the 'recursive' strategy.
- primes.py | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-\end{lstlisting}
-
-Y podemos ver cómo en este caso la mezcla salió bien porque no había discrepancias de formato de {\bf EOL}.
+Traten de hacer el {\bf merge} corrigiendo la historia de la rama usando el script dado en \hyperref[correct_eol_history]{esta receta}.
+La solución está \hyperref[exercise08]{aquí}.
 
 \subsection{Tips}
 \begin{itemize}
