@@ -468,125 +468,15 @@ If a developer changed the EOL-format of a file in a PR, it should {\bf never} h
 the developer should have corrected the history of the branch so that the EOL-format never happens (the branch can be corrected
 rather effortlessly using the recipe, ok?).
 
-\subsection{Example 18 - using the script}
-\label{example18}
-
-From the \hyperref[examples_repo]{examples repo}, checkout branch {\bf example18/branchA} and merge {\bf example18/branchB}. We
-should get a full-file conflict in {\bf primes.py}.
-
-Let's try to correct the history of the branch where the {\bf EOL format} was changed. Let's use {\bf uix2dos} as we did before to check it:
-
-\begin{lstlisting}[style=console_style,
-	basicstyle=\small,
-	caption={\bf example 18} - EOL formats]
-$ git show HEAD:primes.py | unix2dos -idum
-       0      21       0
-$ git show MERGE_HEAD:primes.py | unix2dos -idum
-      27       0       0
-$ git show $( git merge-base HEAD MERGE_HEAD ):primes.py | unix2dos -idum
-       0      21       0
-\end{lstlisting}
-
-And we can see how the format was changed in {\bf MERGE\_HEAD, a.k.a the other branch}, so let's checkout that branch and see where it broke:
-
-\begin{lstlisting}[style=console_style,
-	basicstyle=\small,
-	caption={\bf example 18} - Find out where it broke]
-$ git checkout -f example18/branchB
-Switched to branch 'example18/branchB'
-$ git log --stat --pretty=%h primes.py
-491c86b
-
- primes.py | 3 +++
- 1 file changed, 3 insertions(+)
-ea81ba7
-
- primes.py | 45 ++++++++++++++++++++++++---------------------
- 1 file changed, 24 insertions(+), 21 deletions(-)
-55be073
-
- primes.py | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
-\end{lstlisting}
-
-And we can see how the file was heavily modified on revision {\bf ea81ba7}. Let's make really sure:
-
-\begin{lstlisting}[style=console_style,
-	basicstyle=\small,
-	caption={\bf example 18} - double checking]
-$ git show ea81ba7~:primes.py | unix2dos -idum
-       0      21       0
-$ git show ea81ba7:primes.py | unix2dos -idum
-      24       0       0
-\end{lstlisting}
-
-And there we have it in all it's glory. In {\bf ea81ba7}s ancestor, it was all NIX breaks and on {\bf ea81ba7} it was changed to DOS breaks.
-
-Let's use the recipe to correct the branch. First I will put the script in the working tree, then I will try to run it:
-
-\begin{lstlisting}[style=console_style,
-	basicstyle=\small,
-	caption={\bf example 18} - running recipe script]
-$ ./correct_eol.sh ea81ba7~ example18/branchB primes.py
-correct_eol.sh
-copyright 2020 Edmundo Carmona Antoranz
-Released under the terms of GPLv2
-file: primes.py EOL format: unix
-Checking out starting revision (55be073 Prime number calculation)
-Bringing over revision ea81ba7 (Check only already-known primes as divisors)
-
-Bringing over revision 491c86b (No need to check all divisors)
-
-Finished
-Check the results in the working tree and also the branch history with git log or gitk
-If you like the results, feel free to move the branch over here (for example, with 'git branch -f some-branch')
-\end{lstlisting}
-
-Let's check current branch history:
-
-\begin{lstlisting}[style=console_style,
-	basicstyle=\small,
-	caption={\bf example 18} - running recipe script]
-$ git log --graph --oneline HEAD example18/branchA example18/branchB
-* fa1aca4 (HEAD) No need to check all divisors
-* 434aec2 Check only already-known primes as divisors
-| * 2be7601 (example18/branchA) Let's go up to 10000
-|/  
-| * 491c86b (example18/branchB) No need to check all divisors
-| * ea81ba7 Check only already-known primes as divisors
-|/  
-* 55be073 Prime number calculation
-\end{lstlisting}
-
-And we can see how {\bf HEAD} and {\bf example18/branchB} have analogous histories. Let's compare the branches to
-make sure that they really are like each other:
-
-\begin{lstlisting}[style=console_style,
-	basicstyle=\small,
-	caption={\bf example 18} - comparing results]
-$ git diff -w HEAD example18/branchB
-$
-\end{lstlisting}
-
-Exactly what we wanted.Now we should move the branch and merge. I will skip the moving step and will proceed to merge instead on
-{\bf HEAD}:
-
-\begin{lstlisting}[style=console_style,
-	basicstyle=\small,
-	caption={\bf example 18} - merging on {\bf HEAD}]
-$ git merge example18/branchA
-Auto-merging primes.py
-Merge made by the 'recursive' strategy.
- primes.py | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-\end{lstlisting}
-
-And we can see how merge went fine this time around, because there were no {\bf EOL} discrepancies.
-
 \subsection{Exercises}
 
-\subsubsection{Exercise }
+\subsubsection{Exercise 8 - using the script}
 
+From the \hyperref[exercises_repo]{exercises repo}, checkout branch {\bf exercise8/branchA} and merge {\bf exercise8/branchB}. We
+should get a full-file conflict in {\bf primes.py}.
+
+Try to do this merge correcting history using the script from \hyperref[correct_eol_history]{this recipe}.
+Solution is \hyperref[exercise08]{here}.
 
 \subsection{Tips}
 \begin{itemize}
