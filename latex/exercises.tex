@@ -1104,7 +1104,7 @@ $ git diff -w HEAD exercise8/branchB
 $
 \end{lstlisting}
 
-Exactly what we wanted.Now we should move the branch and merge. I will skip the moving step and will proceed to merge instead on
+Exactly what we wanted. Now we should move the branch and merge. I will skip the moving step and will proceed to merge instead on
 {\bf HEAD}:
 
 \begin{lstlisting}[style=console_style,
@@ -1118,3 +1118,217 @@ Merge made by the 'recursive' strategy.
 \end{lstlisting}
 
 And we can see how merge went fine this time around, because there were no {\bf EOL} discrepancies.
+
+\section{Exercise 8, continued - how would you merge exercise8/branchC?}
+\label{exercise08_cont}
+
+Remember that I said that changing {\bf EOL-format} back to what it was originally means facing the consequences?
+
+From the previous example, how would you move forward to be able to {\it also} merge {\bf exercise8/branchC} after merging
+{\bf exercise8/branchA} and {\it the new corrected} {\bf exercise8/branchB}?
+
+First, let's take a look at all of the branches as I see them right now\footnote{{\bf exercise8/branchB} is still at the old
+position. Also note that the IDs of the revisions that are being created in the process are {\bf not} going to be the same
+revision that you get while going through it, so careful with that. The IDs I will use in the commands are not the same you
+will use}:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption={\bf exercise 8, continued} - current history of branches]
+*   c5e5028 (HEAD) Merge branch 'exercise8/branchA' into HEAD
+|\  
+| * 2be7601 (exercise8/branchA) Let's go up to 10000
+* | fa1aca4 No need to check all divisors
+* | 434aec2 Check only already-known primes as divisors
+|/  
+| * a99495f (exercise8/branchC) Very small change
+| | * 491c86b (exercise8/branchB) No need to check all divisors
+| |/  
+| * ea81ba7 Check only already-known primes as divisors
+|/  
+* 55be073 Prime number calculation
+\end{lstlisting}
+
+Common wisdom would tell us to put {\bf a99495f} on top of the new revision {\bf equivalent } of {\bf ea81ba7} that has
+the corrected {\bf EOL format} so that we jump out of the old history of {\bf exercise8/branchB}, which means to rebase or
+cherry-pick it on top of {\bf 434aec2}. But we know what will happen if we tried, don't we?
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption={\bf exercise 8, continued} - rebasing {\bf a99495f} on top of {\bf 434aec2}]
+$ git rebase --onto 434aec2 a99495f~ a99495f
+Auto-merging primes.py
+CONFLICT (content): Merge conflict in primes.py
+error: could not apply a99495f... Very small change
+Resolve all conflicts manually, mark them as resolved with
+"git add/rm <conflicted_files>", then run "git rebase --continue".
+You can instead skip this commit: run "git rebase --skip".
+To abort and get back to the state before "git rebase", run "git rebase --abort".
+Could not apply a99495f... Very small change
+\end{lstlisting}
+
+A conflict. And it's a full-file conflict, right? Different EOL-formats so that is to be expected. So this is not the path to go
+down.
+
+What we could do to move forward is use the script to {\it also} rewrite the history of branch {\bf exercise8/branchC} starting from
+{\bf 55be073}\footnote{The equivalent of {\bf ea81ba7~}}. It doesn't matter if we are duplicating a correction for revision
+{\bf ea81ba7}. It will be a temporary adjustment so that I can then rebase the tip revision (the only revision that is unique to
+{\bf exercise8/branchC}) on top of {\bf 434aec2}, so that we work on the rebased branch of {\bf exercise8/branchB}.
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption={\bf exercise 8, continued} - correcting {\bf EOL-formats} of {\bf exercise8/branchC}]
+$ ./correct_eol.sh 55be073 exercise8/branchC primes.py
+correct_eol.sh
+copyright 2020 Edmundo Carmona Antoranz
+Released under the terms of GPLv2
+file: primes.py EOL format: unix
+Checking out starting revision (55be073 Prime number calculation)
+Bringing over revision ea81ba7 (Check only already-known primes as divisors)
+
+Bringing over revision a99495f (Very small change)
+
+Finished
+Check the results in the working tree and also the branch history with git log or gitk
+If you like the results, feel free to move the branch over here (for example, with 'git branch -f some-branch')
+\end{lstlisting}
+
+Let's see all branches involved at the moment:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption={\bf exercise 8, continued} - history of branches after {\bf EOL-format} correction]
+$ git log --oneline --graph HEAD c5e5028 exercise8/branchC exercise8/branchB
+* 5aa19b6 (HEAD) Very small change
+* 8be9a1a Check only already-known primes as divisors
+| *   c5e5028 Merge branch 'exercise8/branchA' into HEAD
+| |\  
+| | * 2be7601 (exercise8/branchA) Let's go up to 10000
+| |/  
+|/|   
+| * fa1aca4 No need to check all divisors
+| * 434aec2 Check only already-known primes as divisors
+|/  
+| * a99495f (exercise8/branchC) Very small change
+| | * 491c86b (exercise8/branchB) No need to check all divisors
+| |/  
+| * ea81ba7 Check only already-known primes as divisors
+|/  
+* 55be073 Prime number calculation
+\end{lstlisting}
+
+And now we rebase {\bf HEAD} on top of {\bf 434aec2}:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption={\bf exercise 8, continued} - rebasing]
+$ git rebase --onto 434aec2 HEAD~ HEAD
+Successfully rebased and updated detached HEAD.
+$ git log --oneline --graph HEAD c5e5028 exercise8/branchC exercise8/branchB
+* a1dac55 (HEAD) Very small change
+| *   c5e5028 Merge branch 'exercise8/branchA' into HEAD
+| |\  
+| | * 2be7601 (exercise8/branchA) Let's go up to 10000
+| * | fa1aca4 No need to check all divisors
+|/ /  
+* / 434aec2 Check only already-known primes as divisors
+|/  
+| * a99495f (exercise8/branchC) Very small change
+| | * 491c86b (exercise8/branchB) No need to check all divisors
+| |/  
+| * ea81ba7 Check only already-known primes as divisors
+|/  
+* 55be073 Prime number calculation
+\end{lstlisting}
+
+And we can see how {\bf HEAD} has {\bf 434aec2} as its parent. Finally we can ask to merge:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption={\bf exercise 8, continued} - trying real merge]
+$ git merge c5e5028
+Auto-merging primes.py
+CONFLICT (content): Merge conflict in primes.py
+Automatic merge failed; fix conflicts and then commit the result.
+\end{lstlisting}
+
+Ok, we have a conflict, but it's a {\it normal} {\bf CB} inside the file:
+
+\begin{lstlisting}[style=python_style,
+	firstnumber=14,
+	basicstyle=\small,
+	caption={\bf exercise 8, continued} - {\bf CB}]
+<<<<<<< HEAD
+    if aNumber % i == 0:
+      # not a prime
+      prime=False
+||||||| 434aec2
+    prime=aNumber % i > 0
+    if not prime:
+=======
+    if i * i > aNumber:
+      # no need to continue, it's a prime
+      break
+    prime=aNumber % i > 0
+    if not prime:
+>>>>>>> c5e5028
+\end{lstlisting}
+
+And after doing our normal process to solve conflicts, we should end up with this file:
+\begin{lstlisting}[style=python_style,
+	basicstyle=\small,
+	caption={\bf exercise 8, continued} - solved conflict]
+#!/usr/bin/python3
+
+# copyright 2020 Edmundo Carmona Antoranz
+# released under the terms of GPLv2
+
+
+# a script to list the primes up to 100
+
+primes=[]
+
+def isPrime(aNumber):
+  prime=True
+  for i in primes:
+    if i * i > aNumber:
+      # no need to continue, it's a prime
+      break
+    if aNumber % i == 0:
+      # not a prime
+      prime=False
+      break
+  # if we made it this far, it's a prime
+  if prime:
+    primes.append(aNumber)
+  return prime
+
+for i in range(2, 10000):
+  if isPrime(i):
+    print(i)
+\end{lstlisting}
+
+And now we can wrap up the merge:
+
+\begin{lstlisting}[style=console_style,
+	basicstyle=\small,
+	caption={\bf exercise 8, continued} - wrap merge]
+$ git commit --no-edit
+[detached HEAD 97cceb5] Merge commit 'c5e5028' into HEAD
+$ git branch -f exercise8/branchB fa1aca4
+$ git branch -f exercise8/branchC a1dac55
+$ git log --oneline --graph
+*   97cceb5 (HEAD) Merge commit 'c5e5028' into HEAD
+|\  
+| *   c5e5028 Merge branch 'exercise8/branchA' into HEAD
+| |\  
+| | * 2be7601 (exercise8/branchA) Let's go up to 10000
+| * | fa1aca4 (exercise8/branchB) No need to check all divisors
+* | | a1dac55 (exercise8/branchC) Very small change
+|/ /  
+* / 434aec2 Check only already-known primes as divisors
+|/  
+* 55be073 Prime number calculation
+\end{lstlisting}\footnote{Merges can also be wrapped up running {\bf git commit}}
+
+And that is it.
