@@ -195,23 +195,20 @@ fi
 git log --reverse --pretty=%h $start_rev..$end_rev |  while read revision; do
 	echo Bringing over revision $revision \($( git show --summary --pretty=%s --quiet $revision )\)
 	git cherry-pick $revision &> /dev/null
-	cherry_pick_result=$?
-	# there is a conflict, means there is a problem with the EOL formats at some file
-	for i in $( seq 0 $(( $total_files - 1 )) ); do
-		file=${files[$i]}
-		format=${formats[$i]}
-		git show $revision:"$file" | transform $format > "$file"
-		git add "$file"
-	done
-	# wrap up revision
-	if [ $cherry_pick_result -eq 0 ]; then
-		GIT_EDITOR=/bin/true git commit --amend --no-edit &> /dev/null
-	else
-		GIT_EDITOR=/bin/true git cherry-pick --continue --no-edit &> /dev/null
-	fi
+	# if there is a conflict, it means there is a problem with the EOL format of at least one file
 	if [ $? -ne 0 ]; then
-		echo Failed to create new revision for $revision. Aborting
-		exit 1
+		for i in $( seq 0 $(( $total_files - 1 )) ); do
+			file=${files[$i]}
+			format=${formats[$i]}
+			git show $revision:"$file" | transform $format > "$file"
+			git add "$file"
+		done
+		# wrap up revision
+		GIT_EDITOR=/bin/true git cherry-pick --continue --no-edit &> /dev/null
+		if [ $? -ne 0 ]; then
+			echo Failed to create new revision for $revision. Aborting
+			exit 1
+		fi
 	fi
 	echo
 done
